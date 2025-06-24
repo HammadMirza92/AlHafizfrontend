@@ -1,0 +1,35 @@
+.bank-list-container {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+    }
+
+    .mat-column-id {
+      width: 10%;
+    }
+
+    .mat-column-name {
+      width: 70%;
+    }
+
+    .mat-column-actions {
+      width: 20%;
+      text-align: center;
+    }
+  }
+}

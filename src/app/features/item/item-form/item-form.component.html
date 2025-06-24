@@ -1,0 +1,30 @@
+<div class="item-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Item</h1>
+    <button mat-raised-button color="primary" routerLink="/items">
+      <mat-icon>list</mat-icon>
+      All Items
+    </button>
+  </div>
+
+  <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Item Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter item name" required>
+          <mat-error *ngIf="itemForm.get('name')?.hasError('required')">
+            Item name is required
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/items">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="itemForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

@@ -1,0 +1,30 @@
+<div class="customer-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Customer</h1>
+    <button mat-raised-button color="primary" routerLink="/customers">
+      <mat-icon>list</mat-icon>
+      All Customers
+    </button>
+  </div>
+
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Customer Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter customer name" required>
+          <mat-error *ngIf="customerForm.get('name')?.hasError('required')">
+            Customer name is required
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/customers">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="customerForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

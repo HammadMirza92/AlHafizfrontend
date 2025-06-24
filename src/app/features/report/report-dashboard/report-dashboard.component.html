@@ -1,0 +1,77 @@
+<div class="report-dashboard-container">
+  <div class="header">
+    <h1>Reports</h1>
+  </div>
+
+  <div class="reports-grid">
+    <mat-card [routerLink]="['/reports/purchase']" class="report-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>add_shopping_cart</mat-icon>
+        <mat-card-title>Purchase Report</mat-card-title>
+        <mat-card-subtitle>View purchase transactions by date range and customer</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Analyze purchase trends and customer purchases</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary">View Report</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card [routerLink]="['/reports/sale']" class="report-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>shopping_cart</mat-icon>
+        <mat-card-title>Sale Report</mat-card-title>
+        <mat-card-subtitle>View sale transactions by date range and customer</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Analyze sales trends and customer sales</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary">View Report</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card [routerLink]="['/reports/expense']" class="report-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>money_off</mat-icon>
+        <mat-card-title>Expense Report</mat-card-title>
+        <mat-card-subtitle>View expenses by date range and category</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Analyze expense trends and categories</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary">View Report</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card [routerLink]="['/reports/hazri']" class="report-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>assignment_ind</mat-icon>
+        <mat-card-title>Hazri Report</mat-card-title>
+        <mat-card-subtitle>View hazri records by date range and category</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Analyze hazri trends and expenses</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary">View Report</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card [routerLink]="['/reports/cash']" class="report-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>account_balance_wallet</mat-icon>
+        <mat-card-title>Cash Report</mat-card-title>
+        <mat-card-subtitle>View cash transactions by date range and type</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Analyze cash flow and balances</p>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary">View Report</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

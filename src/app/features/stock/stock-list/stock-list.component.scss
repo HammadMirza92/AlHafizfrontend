@@ -1,0 +1,87 @@
+.stock-list-container {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .filter-card {
+    margin-bottom: 20px;
+
+    .search-container {
+      display: flex;
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+    }
+
+    .mat-column-id {
+      width: 10%;
+    }
+
+    .mat-column-item {
+      width: 30%;
+    }
+
+    .mat-column-quantity {
+      width: 20%;
+    }
+
+    .mat-column-lastUpdated {
+      width: 20%;
+    }
+
+    .mat-column-transactions {
+      width: 20%;
+      text-align: center;
+    }
+
+    .low-stock {
+      color: #f44336;
+      font-weight: 500;
+    }
+  }
+
+  .transactions-table {
+    width: 100%;
+
+    .purchase {
+      color: #4caf50;
+    }
+
+    .sale {
+      color: #f44336;
+    }
+
+    .plus {
+      color: #4caf50;
+      font-weight: 500;
+    }
+
+    .minus {
+      color: #f44336;
+      font-weight: 500;
+    }
+  }
+}

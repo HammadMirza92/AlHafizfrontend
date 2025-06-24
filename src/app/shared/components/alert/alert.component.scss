@@ -1,0 +1,27 @@
+.alert-container {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 4px;
+  color: white;
+}
+
+.alert-success {
+  background-color: #4caf50;
+}
+
+.alert-error {
+  background-color: #f44336;
+}
+
+.alert-info {
+  background-color: #2196f3;
+}
+
+.alert-warning {
+  background-color: #ff9800;
+}
+
+mat-icon {
+  margin-right: 10px;
+}

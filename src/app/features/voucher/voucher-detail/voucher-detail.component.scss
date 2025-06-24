@@ -1,0 +1,95 @@
+.voucher-detail-container {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .detail-section {
+    margin-bottom: 30px;
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 20px;
+      font-weight: 500;
+      color: #3f51b5;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 8px;
+    }
+
+    .detail-row {
+      display: flex;
+      margin-bottom: 12px;
+
+      .detail-label {
+        width: 150px;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 0.7);
+      }
+
+      .detail-value {
+        flex: 1;
+      }
+    }
+
+    table {
+      width: 100%;
+      margin-top: 16px;
+    }
+  }
+
+  .not-found {
+    text-align: center;
+    padding: 40px 0;
+
+    h2 {
+      margin-top: 0;
+      color: #f44336;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 0;
+
+    p {
+      margin-top: 16px;
+      font-size: 16px;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
+
+@media print {
+  .header, mat-card-actions {
+    display: none !important;
+  }
+
+  .voucher-detail-container {
+    padding: 0;
+  }
+
+  mat-card {
+    box-shadow: none !important;
+  }
+}

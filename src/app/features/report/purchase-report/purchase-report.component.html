@@ -1,0 +1,149 @@
+<div class="purchase-report-container">
+  <div class="header">
+    <h1>Purchase Report</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="exportReport()">
+        <mat-icon>file_download</mat-icon>
+        Export Report
+      </button>
+      <button mat-raised-button color="primary" (click)="printReport()">
+        <mat-icon>print</mat-icon>
+        Print Report
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate">
+            <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toDatePicker" formControlName="toDate">
+            <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #toDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Customer</mat-label>
+            <mat-select formControlName="customerId">
+              <mat-option [value]="null">All Customers</mat-option>
+              <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="filter-buttons">
+            <button mat-raised-button color="primary" type="submit">Apply Filter</button>
+            <button mat-button color="warn" type="button" (click)="resetFilter()">Reset</button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="report-summary">
+    <mat-card>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-label">Total Purchases</div>
+            <div class="summary-value">{{ getTotalVouchers() }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Total Amount</div>
+            <div class="summary-value">{{ getTotalAmount() | currency }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Total Weight</div>
+            <div class="summary-value">{{ getTotalWeight() }} kg</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Average Rate</div>
+            <div class="summary-value">{{ getAverageRate() | currency }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="table-container mat-elevation-z2">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.createdAt | date: 'mediumDate' }} </td>
+      </ng-container>
+
+      <!-- Voucher ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Voucher # </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.id }} </td>
+      </ng-container>
+
+      <!-- Customer Column -->
+      <ng-container matColumnDef="customer">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.customerName }} </td>
+      </ng-container>
+
+      <!-- Payment Type Column -->
+      <ng-container matColumnDef="paymentType">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Payment Type </th>
+        <td mat-cell *matCellDef="let voucher"> {{ getPaymentTypeText(voucher.paymentType) }} </td>
+      </ng-container>
+
+      <!-- Items Column -->
+      <ng-container matColumnDef="items">
+        <th mat-header-cell *matHeaderCellDef> Items </th>
+        <td mat-cell *matCellDef="let voucher">
+          <span *ngFor="let item of voucher.voucherItems; let isLast = last">
+            {{ item.itemName }} ({{ item.netWeight }}kg){{ isLast ? '' : ', ' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Total Weight Column -->
+      <ng-container matColumnDef="weight">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Weight (kg) </th>
+        <td mat-cell *matCellDef="let voucher"> {{ getVoucherTotalWeight(voucher) }} </td>
+      </ng-container>
+
+      <!-- Total Amount Column -->
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Amount </th>
+        <td mat-cell *matCellDef="let voucher"> {{ getVoucherTotalAmount(voucher) | currency }} </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let voucher">
+          <button mat-icon-button color="primary" [routerLink]="['/vouchers/purchase', voucher.id]" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="text-align: center; padding: 16px;">
+          No purchase vouchers found matching the filter criteria.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+  </div>
+</div>

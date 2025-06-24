@@ -1,0 +1,160 @@
+<div class="sale-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Sale Voucher</h1>
+    <button mat-raised-button color="primary" routerLink="/vouchers/sale">
+      <mat-icon>list</mat-icon>
+      All Sale Vouchers
+    </button>
+  </div>
+
+  <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Customer</mat-label>
+            <mat-select formControlName="customerId" required>
+              <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="saleForm.get('customerId')?.hasError('required')">
+              Customer is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Payment Type</mat-label>
+            <mat-select formControlName="paymentType" required>
+              <mat-option [value]="paymentTypes.Cash">Cash</mat-option>
+              <mat-option [value]="paymentTypes.Bank">Bank</mat-option>
+              <mat-option [value]="paymentTypes.Credit">Credit</mat-option>
+            </mat-select>
+            <mat-error *ngIf="saleForm.get('paymentType')?.hasError('required')">
+              Payment type is required
+            </mat-error>
+          </mat-form-field>
+
+          <ng-container *ngIf="saleForm.get('paymentType')?.value === paymentTypes.Bank">
+            <mat-form-field appearance="outline">
+              <mat-label>Bank</mat-label>
+              <mat-select formControlName="bankId" required>
+                <mat-option *ngFor="let bank of banks" [value]="bank.id">
+                  {{ bank.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="saleForm.get('bankId')?.hasError('required')">
+                Bank is required
+              </mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Payment Details</mat-label>
+            <input matInput formControlName="paymentDetails">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Gari No</mat-label>
+            <input matInput formControlName="gariNo">
+          </mat-form-field>
+        </div>
+
+        <div formArrayName="voucherItems">
+          <h3>Items</h3>
+
+          <div class="items-table">
+            <table class="mat-elevation-z1">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Weight (kg)</th>
+                  <th>Kat (kg)</th>
+                  <th>Net Weight (kg)</th>
+                  <th>Desi Man</th>
+                  <th>Rate</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let itemControl of voucherItemsFormArray.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <mat-select formControlName="itemId" required (selectionChange)="onItemSelected(i)">
+                        <mat-option *ngFor="let stockItem of stockItems" [value]="stockItem.itemId">
+                          {{ stockItem.itemName }} ({{ stockItem.quantity }}kg available)
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.01" formControlName="weight" (input)="calculateNetWeight(i)" required>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.01" formControlName="kat" (input)="calculateNetWeight(i)" required>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.01" formControlName="netWeight" readonly>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.001" formControlName="desiMan" (input)="calculateAmount(i)" required>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.01" formControlName="rate" (input)="calculateAmount(i)" required>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline">
+                      <input matInput type="number" step="0.01" formControlName="amount" readonly>
+                    </mat-form-field>
+                  </td>
+                  <td>
+                    <button mat-icon-button color="warn" type="button" (click)="removeItem(i)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" class="text-right">Total Amount:</td>
+                  <td>{{ getTotalAmount() | currency }}</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td colspan="8">
+                    <button mat-mini-fab color="primary" type="button" (click)="addItem()">
+                      <mat-icon>add</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="details-field">
+          <mat-label>Details</mat-label>
+          <textarea matInput formControlName="details" rows="3"></textarea>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/vouchers/sale">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="saleForm.invalid || voucherItemsFormArray.length === 0">
+          {{ isEditMode ? 'Update' : 'Save' }} Sale Voucher
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

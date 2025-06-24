@@ -1,0 +1,30 @@
+<div class="bank-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Bank</h1>
+    <button mat-raised-button color="primary" routerLink="/banks">
+      <mat-icon>list</mat-icon>
+      All Banks
+    </button>
+  </div>
+
+  <form [formGroup]="bankForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Bank Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter bank name" required>
+          <mat-error *ngIf="bankForm.get('name')?.hasError('required')">
+            Bank name is required
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/banks">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="bankForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

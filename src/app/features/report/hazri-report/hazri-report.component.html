@@ -1,0 +1,138 @@
+<div class="hazri-report-container">
+  <div class="header">
+    <h1>Hazri Report</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="exportReport()">
+        <mat-icon>file_download</mat-icon>
+        Export Report
+      </button>
+      <button mat-raised-button color="primary" (click)="printReport()">
+        <mat-icon>print</mat-icon>
+        Print Report
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" (ngSubmit)="applyFilter()">
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate">
+            <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toDatePicker" formControlName="toDate">
+            <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #toDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Expense Head</mat-label>
+            <mat-select formControlName="expenseHeadId">
+              <mat-option [value]="null">All Expense Heads</mat-option>
+              <mat-option *ngFor="let expenseHead of expenseHeads" [value]="expenseHead.id">
+                {{ expenseHead.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="filter-buttons">
+            <button mat-raised-button color="primary" type="submit">Apply Filter</button>
+            <button mat-button color="warn" type="button" (click)="resetFilter()">Reset</button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="report-summary">
+    <mat-card>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-label">Total Hazri Entries</div>
+            <div class="summary-value">{{ dataSource.data.length }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Total Amount</div>
+            <div class="summary-value">{{ getTotalAmount() | currency }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div *ngIf="dataSource.data.length > 0">
+    <h2>Hazri Distribution by Category</h2>
+    <div class="chart-container">
+      <canvas id="hazriChart"></canvas>
+    </div>
+  </div>
+
+  <div class="table-container mat-elevation-z2">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.createdAt | date: 'mediumDate' }} </td>
+      </ng-container>
+
+      <!-- Voucher ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Voucher # </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.id }} </td>
+      </ng-container>
+
+      <!-- Expense Head Column -->
+      <ng-container matColumnDef="expenseHead">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Expense Head </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.expenseHeadName }} </td>
+      </ng-container>
+
+      <!-- Payment Type Column -->
+      <ng-container matColumnDef="paymentType">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Payment Type </th>
+        <td mat-cell *matCellDef="let voucher"> {{ getPaymentTypeText(voucher.paymentType) }} </td>
+      </ng-container>
+
+      <!-- Amount Column -->
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.amount | currency }} </td>
+      </ng-container>
+
+      <!-- Details Column -->
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef> Details </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.details }} </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef> Actions </th>
+        <td mat-cell *matCellDef="let voucher">
+          <button mat-icon-button color="primary" [routerLink]="['/vouchers/hazri', voucher.id]" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="text-align: center; padding: 16px;">
+          No hazri vouchers found matching the filter criteria.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+  </div>
+</div>

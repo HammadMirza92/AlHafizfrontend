@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.content-container {
+  flex: 1;
+}
+
+.sidebar-container {
+  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.content {
+  padding: 20px;
+  min-height: calc(100vh - 64px - 48px);
+  box-sizing: border-box;
+}

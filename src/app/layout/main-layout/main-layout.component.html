@@ -1,0 +1,16 @@
+<div class="container">
+  <app-header (toggleSidebar)="drawer.toggle()"></app-header>
+
+  <mat-drawer-container class="content-container">
+    <mat-drawer #drawer [mode]="'side'" [opened]="true" class="sidebar-container">
+      <app-sidebar></app-sidebar>
+    </mat-drawer>
+
+    <mat-drawer-content>
+      <div class="content">
+        <router-outlet></router-outlet>
+      </div>
+      <app-footer></app-footer>
+    </mat-drawer-content>
+  </mat-drawer-container>
+</div>

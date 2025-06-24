@@ -1,0 +1,110 @@
+.purchase-report-container {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .filter-card {
+    margin-bottom: 20px;
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+
+      mat-form-field {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .filter-buttons {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+      }
+    }
+  }
+
+  .report-summary {
+    margin-bottom: 20px;
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+
+      .summary-item {
+        text-align: center;
+
+        .summary-label {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.6);
+          margin-bottom: 8px;
+        }
+
+        .summary-value {
+          font-size: 24px;
+          font-weight: 500;
+          color: #3f51b5;
+        }
+      }
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+    }
+
+    .mat-column-date, .mat-column-id, .mat-column-paymentType {
+      width: 10%;
+    }
+
+    .mat-column-customer {
+      width: 15%;
+    }
+
+    .mat-column-items {
+      width: 25%;
+    }
+
+    .mat-column-weight, .mat-column-amount {
+      width: 10%;
+    }
+
+    .mat-column-actions {
+      width: 10%;
+      text-align: center;
+    }
+  }
+}
+
+@media print {
+  .header, .filter-card, .mat-column-actions, mat-paginator {
+    display: none !important;
+  }
+
+  .purchase-report-container {
+    padding: 0;
+  }
+
+  mat-card {
+    box-shadow: none !important;
+  }
+}

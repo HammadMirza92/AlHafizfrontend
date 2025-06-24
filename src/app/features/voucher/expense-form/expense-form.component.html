@@ -1,0 +1,86 @@
+<div class="expense-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Expense Voucher</h1>
+    <button mat-raised-button color="primary" routerLink="/vouchers/expense">
+      <mat-icon>list</mat-icon>
+      All Expense Vouchers
+    </button>
+  </div>
+
+  <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Payment Type</mat-label>
+            <mat-select formControlName="paymentType" required>
+              <mat-option [value]="paymentTypes.Cash">Cash</mat-option>
+              <mat-option [value]="paymentTypes.Bank">Bank</mat-option>
+              <mat-option [value]="paymentTypes.Credit">Credit</mat-option>
+            </mat-select>
+            <mat-error *ngIf="expenseForm.get('paymentType')?.hasError('required')">
+              Payment type is required
+            </mat-error>
+          </mat-form-field>
+
+          <ng-container *ngIf="expenseForm.get('paymentType')?.value === paymentTypes.Bank">
+            <mat-form-field appearance="outline">
+              <mat-label>Bank</mat-label>
+              <mat-select formControlName="bankId" required>
+                <mat-option *ngFor="let bank of banks" [value]="bank.id">
+                  {{ bank.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="expenseForm.get('bankId')?.hasError('required')">
+                Bank is required
+              </mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Payment Details</mat-label>
+            <input matInput formControlName="paymentDetails">
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Expense Head</mat-label>
+            <mat-select formControlName="expenseHeadId" required>
+              <mat-option *ngFor="let expenseHead of expenseHeads" [value]="expenseHead.id">
+                {{ expenseHead.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="expenseForm.get('expenseHeadId')?.hasError('required')">
+              Expense head is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" step="0.01" formControlName="amount" required>
+            <span matPrefix>₨&nbsp;</span>
+            <mat-error *ngIf="expenseForm.get('amount')?.hasError('required')">
+              Amount is required
+            </mat-error>
+            <mat-error *ngIf="expenseForm.get('amount')?.hasError('min')">
+              Amount must be greater than zero
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="details-field">
+          <mat-label>Details</mat-label>
+          <textarea matInput formControlName="details" rows="3"></textarea>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/vouchers/expense">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="expenseForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }} Expense Voucher
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

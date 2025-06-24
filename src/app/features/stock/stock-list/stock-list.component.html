@@ -1,0 +1,141 @@
+<div class="stock-list-container">
+  <div class="header">
+    <h1>Stock Inventory</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="exportToExcel()">
+        <mat-icon>file_download</mat-icon>
+        Export to Excel
+      </button>
+      <button mat-raised-button color="accent" (click)="refresh()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="search-container">
+        <mat-form-field appearance="outline">
+          <mat-label>Search Items</mat-label>
+          <input matInput (keyup)="applyFilter($event)" placeholder="Enter item name" #input>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="table-container mat-elevation-z2">
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+        <td mat-cell *matCellDef="let stock"> {{ stock.id }} </td>
+      </ng-container>
+
+      <!-- Item Column -->
+      <ng-container matColumnDef="item">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Item </th>
+        <td mat-cell *matCellDef="let stock"> {{ stock.itemName }} </td>
+      </ng-container>
+
+      <!-- Quantity Column -->
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Quantity (kg) </th>
+        <td mat-cell *matCellDef="let stock" [ngClass]="{'low-stock': stock.quantity < 100}">
+          {{ stock.quantity }}
+        </td>
+      </ng-container>
+
+      <!-- Last Updated Column -->
+      <ng-container matColumnDef="lastUpdated">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last Updated </th>
+        <td mat-cell *matCellDef="let stock">
+          <span *ngIf="getLastUpdatedVoucher(stock.itemId) as voucher">
+            {{ voucher.createdAt | date: 'medium' }}
+          </span>
+          <span *ngIf="!getLastUpdatedVoucher(stock.itemId)">-</span>
+        </td>
+      </ng-container>
+
+      <!-- Transaction Column -->
+      <ng-container matColumnDef="transactions">
+        <th mat-header-cell *matHeaderCellDef> Transactions </th>
+        <td mat-cell *matCellDef="let stock">
+          <button mat-raised-button color="primary" (click)="viewItemTransactions(stock.itemId)">
+            <mat-icon>history</mat-icon>
+            View History
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="text-align: center; padding: 16px;">
+          No stock items found{{ input.value ? ' matching "' + input.value + '"' : '' }}.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+  </div>
+
+  <!-- Item Transactions Dialog -->
+  <ng-template #transactionsDialog>
+    <h2 mat-dialog-title>{{ selectedItem?.itemName }} Transaction History</h2>
+    <mat-dialog-content>
+      <div *ngIf="itemTransactions?.length; else noTransactions">
+        <table mat-table [dataSource]="transactionsDataSource" class="transactions-table">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef> Date </th>
+            <td mat-cell *matCellDef="let transaction"> {{ transaction.createdAt | date: 'medium' }} </td>
+          </ng-container>
+
+          <!-- Type Column -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef> Type </th>
+            <td mat-cell *matCellDef="let transaction">
+              <span [ngClass]="{'purchase': transaction.voucherType === 1, 'sale': transaction.voucherType === 2}">
+                {{ getVoucherTypeText(transaction.voucherType) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Customer Column -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef> Customer </th>
+            <td mat-cell *matCellDef="let transaction"> {{ transaction.customerName }} </td>
+          </ng-container>
+
+          <!-- Quantity Column -->
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef> Quantity (kg) </th>
+            <td mat-cell *matCellDef="let transaction">
+              <span [ngClass]="{'plus': transaction.voucherType === 1, 'minus': transaction.voucherType === 2}">
+                {{ transaction.voucherType === 1 ? '+' : '-' }}{{ transaction.netWeight }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef> Amount </th>
+            <td mat-cell *matCellDef="let transaction"> {{ transaction.amount | currency }} </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="transactionColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: transactionColumns;"></tr>
+        </table>
+      </div>
+      <ng-template #noTransactions>
+        <p>No transaction history found for this item.</p>
+      </ng-template>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Close</button>
+    </mat-dialog-actions>
+  </ng-template>
+</div>

@@ -1,0 +1,30 @@
+<div class="expense-head-form-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit' : 'New' }} Expense Head</h1>
+    <button mat-raised-button color="primary" routerLink="/expense-heads">
+      <mat-icon>list</mat-icon>
+      All Expense Heads
+    </button>
+  </div>
+
+  <form [formGroup]="expenseHeadForm" (ngSubmit)="onSubmit()">
+    <mat-card>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Expense Head Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter expense head name" required>
+          <mat-error *ngIf="expenseHeadForm.get('name')?.hasError('required')">
+            Expense head name is required
+          </mat-error>
+        </mat-form-field>
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button mat-button type="button" routerLink="/expense-heads">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="expenseHeadForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+</div>

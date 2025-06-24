@@ -1,0 +1,149 @@
+<div class="voucher-list-container">
+  <div class="header">
+    <h1>{{ getVoucherTypeTitle() }} Vouchers</h1>
+    <button mat-raised-button color="primary" [routerLink]="getNewVoucherPath()">
+      <mat-icon>add</mat-icon>
+      New {{ getVoucherTypeTitle() }} Voucher
+    </button>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" (ngSubmit)="onFilter()">
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate">
+            <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toDatePicker" formControlName="toDate">
+            <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #toDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <ng-container *ngIf="voucherType === 1 || voucherType === 2 || voucherType === 5 || voucherType === 6">
+            <mat-form-field appearance="outline">
+              <mat-label>Customer</mat-label>
+              <mat-select formControlName="customerId">
+                <mat-option [value]="null">All</mat-option>
+                <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                  {{ customer.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+
+          <ng-container *ngIf="voucherType === 3 || voucherType === 4">
+            <mat-form-field appearance="outline">
+              <mat-label>Expense Head</mat-label>
+              <mat-select formControlName="expenseHeadId">
+                <mat-option [value]="null">All</mat-option>
+                <mat-option *ngFor="let expenseHead of expenseHeads" [value]="expenseHead.id">
+                  {{ expenseHead.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+
+          <div class="filter-buttons">
+            <button mat-raised-button color="primary" type="submit">Filter</button>
+            <button mat-button color="warn" type="button" (click)="resetFilter()">Reset</button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="table-container mat-elevation-z2">
+    <table mat-table [dataSource]="dataSource" matSort>
+
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.id }} </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.createdAt | date: 'mediumDate' }} </td>
+      </ng-container>
+
+      <!-- Customer Column -->
+      <ng-container matColumnDef="customer" *ngIf="voucherType === 1 || voucherType === 2 || voucherType === 5 || voucherType === 6">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.customerName }} </td>
+      </ng-container>
+
+      <!-- Expense Head Column -->
+      <ng-container matColumnDef="expenseHead" *ngIf="voucherType === 3 || voucherType === 4">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Expense Head </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.expenseHeadName }} </td>
+      </ng-container>
+
+      <!-- Payment Type Column -->
+      <ng-container matColumnDef="paymentType">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Payment Type </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.paymentType }} </td>
+      </ng-container>
+
+      <!-- Bank Column -->
+      <ng-container matColumnDef="bank">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Bank </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.bankName || '-'}} </td>
+      </ng-container>
+
+      <!-- Amount Column -->
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
+        <td mat-cell *matCellDef="let voucher"> {{ voucher.voucherItems[0].amount | currency }} </td>
+      </ng-container>
+
+      <!-- Details Column -->
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef> Details </th>
+        <td mat-cell *matCellDef="let voucher">
+          <button mat-icon-button color="primary" [routerLink]="['./', voucher.id]" matTooltip="View Details">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Edit Column -->
+      <ng-container matColumnDef="edit">
+        <th mat-header-cell *matHeaderCellDef> Edit </th>
+        <td mat-cell *matCellDef="let voucher">
+          <button mat-icon-button color="accent" [routerLink]="['./edit', voucher.id]" matTooltip="Edit Voucher">
+            <mat-icon>edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Delete Column -->
+      <ng-container matColumnDef="delete">
+        <th mat-header-cell *matHeaderCellDef> Delete </th>
+        <td mat-cell *matCellDef="let voucher">
+          <button mat-icon-button color="warn" (click)="deleteVoucher(voucher)" matTooltip="Delete Voucher">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          No data found for {{ getVoucherTypeTitle() }} Vouchers.
+        </td>
+      </tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+  </div>
+</div>

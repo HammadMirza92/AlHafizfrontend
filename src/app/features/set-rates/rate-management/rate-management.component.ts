@@ -1,17 +1,12 @@
-// components/rate-management/rate-management.component.ts
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-
+// rate-management.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RateManagementService } from 'src/app/core/services/rateManagement.service';
-import { SetRateDialogComponent } from '../set-rate-dialog/set-rate-dialog.component';
-import { CustomerRateDialogComponent } from '../customer-rate-dialog/customer-rate-dialog.component';
-import { ItemRateDialogComponent } from '../item-rate-dialog/item-rate-dialog.component';
+import { debounceTime, distinctUntilChanged, forkJoin, Subject } from 'rxjs';
+import { CustomerItemRateService } from 'src/app/core/services/customer-item-rate.service';
+import { CustomerService } from 'src/app/core/services/customer.service';
+import { ItemService } from 'src/app/core/services/item.service';
+import { AlertComponent } from 'src/app/shared/components/alert/alert.component';
 
 @Component({
   selector: 'app-rate-management',
@@ -19,219 +14,158 @@ import { ItemRateDialogComponent } from '../item-rate-dialog/item-rate-dialog.co
   styleUrls: ['./rate-management.component.scss']
 })
 export class RateManagementComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
-
-  // Data sources
-  customerDataSource = new MatTableDataSource<any>([]);
-  itemDataSource = new MatTableDataSource<any>([]);
-  rateMatrixDataSource = new MatTableDataSource<any>([]);
-
-  // Table columns
-  customerColumns = ['id', 'name', 'actions'];
-  itemColumns = ['id', 'name', 'actions'];
-  rateMatrixColumns = ['customerName', 'itemName', 'rate', 'actions'];
-
-  // View mode
-  viewMode: 'customers' | 'items' | 'rates' = 'rates';
-
-  // Loading states
-  loading = false;
-
-  // Search controls
-  customerSearchControl = new FormControl('');
-  itemSearchControl = new FormControl('');
-  rateSearchControl = new FormControl('');
-
-  // Data
   customers: any[] = [];
   items: any[] = [];
-  rateMatrix: any[] = [];
+  rates: any[] = [];
+  loading = false;
+  filteredCustomers: any[] = [];
+  rateForm: FormGroup;
+  selectedCustomerId: number | null = null;
+  customerRates: any[] = [];
+customerSearchText: string = '';
+  // Table columns
+  displayedColumns: string[] = ['itemName', 'rate', 'actions'];
+private searchSubject = new Subject<string>();
 
   constructor(
-    private rateManagementService: RateManagementService,
-    private dialog: MatDialog,
+    private formBuilder: FormBuilder,
+    private rateService: CustomerItemRateService,
+    private customerService: CustomerService,
+    private itemService: ItemService,
     private snackBar: MatSnackBar
-  ) {}
+  ) {
+    this.rateForm = this.createRateForm();
+  }
 
   ngOnInit(): void {
     this.loadData();
-    this.setupSearch();
+    this.searchSubject.pipe(
+    debounceTime(300),
+    distinctUntilChanged()
+  ).subscribe(searchText => {
+    this.filterCustomers(searchText);
+  });
+  }
+onSearchInput(searchText: string): void {
+  this.searchSubject.next(searchText);
+}
+  createRateForm(): FormGroup {
+    return this.formBuilder.group({
+      customerId: [null, Validators.required],
+      itemId: [null, Validators.required],
+      rate: [0, [Validators.required, Validators.min(0.01)]]
+    });
   }
 
   loadData(): void {
     this.loading = true;
-    this.rateManagementService.getAllCustomersAndItems().subscribe({
-      next: ({ customers, items }) => {
+
+    forkJoin([
+      this.customerService.getCustomers(),
+      this.itemService.getItems(),
+      this.rateService.getAllRates()
+    ]).subscribe({
+      next: ([customers, items, rates]) => {
         this.customers = customers;
+        this.filteredCustomers = [...customers];
         this.items = items;
-        this.customerDataSource.data = customers;
-        this.itemDataSource.data = items;
-        this.generateRateMatrix();
+        this.rates = rates;
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading data:', error);
-        this.snackBar.open('Error loading data', 'Close', { duration: 3000 });
+        this.showSnackBar('Error loading rate data', 'error');
+        this.loading = false;
+      }
+    });
+  }
+  filterCustomers(searchText: string): void {
+      this.customerSearchText = searchText.toLowerCase();
+      if (!this.customerSearchText) {
+        this.filteredCustomers = [...this.customers];
+        return;
+      }
+
+      this.filteredCustomers = this.customers.filter(customer =>
+        customer.name.toLowerCase().includes(this.customerSearchText)
+      );
+    }
+  onCustomerChange(customerId: number): void {
+    this.selectedCustomerId = customerId;
+    this.rateForm.patchValue({ customerId });
+
+    this.loading = true;
+    this.rateService.getRatesByCustomer(customerId).subscribe({
+      next: (rates) => {
+        this.customerRates = rates;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading customer rates:', error);
+        this.showSnackBar('Error loading customer rates', 'error');
         this.loading = false;
       }
     });
   }
 
-  generateRateMatrix(): void {
-    this.rateMatrix = [];
-    this.customers.forEach(customer => {
-      this.items.forEach(item => {
-        this.rateMatrix.push({
-          customerId: customer.id,
-          customerName: customer.name,
-          itemId: item.id,
-          itemName: item.name,
-          rate: undefined
-        });
-      });
-    });
-    this.rateMatrixDataSource.data = this.rateMatrix;
-  }
-
-  setupSearch(): void {
-    // Customer search
-    this.customerSearchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(searchTerm => {
-        this.applyCustomerFilter(searchTerm || '');
-      });
-
-    // Item search
-    this.itemSearchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(searchTerm => {
-        this.applyItemFilter(searchTerm || '');
-      });
-
-    // Rate matrix search
-    this.rateSearchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(searchTerm => {
-        this.applyRateFilter(searchTerm || '');
-      });
-  }
-
-  applyCustomerFilter(filterValue: string): void {
-    this.customerDataSource.filter = filterValue.trim().toLowerCase();
-  }
-
-  applyItemFilter(filterValue: string): void {
-    this.itemDataSource.filter = filterValue.trim().toLowerCase();
-  }
-
-  applyRateFilter(filterValue: string): void {
-    this.rateMatrixDataSource.filter = filterValue.trim().toLowerCase();
-  }
-
-  // Customer operations
-  openCustomerDialog(customer?: any): void {
-    const dialogRef = this.dialog.open(CustomerRateDialogComponent, {
-      width: '400px',
-      data: { customer, items: this.items }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
+  editRate(rate: any): void {
+    this.rateForm.patchValue({
+      customerId: rate.customerId,
+      itemId: rate.itemId,
+      rate: rate.rate
     });
   }
 
-  deleteCustomer(customer: any): void {
-    if (confirm(`Are you sure you want to delete customer "${customer.name}"?`)) {
-      this.rateManagementService.deleteCustomer(customer.id).subscribe({
-        next: () => {
-          this.snackBar.open('Customer deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Error deleting customer:', error);
-          this.snackBar.open('Error deleting customer', 'Close', { duration: 3000 });
-        }
-      });
+  setRate(): void {
+    if (this.rateForm.invalid) {
+      this.rateForm.markAllAsTouched();
+      return;
     }
-  }
 
-  // Item operations
-  openItemDialog(item?: any): void {
-    const dialogRef = this.dialog.open(ItemRateDialogComponent, {
-      width: '400px',
-      data: { item, customers: this.customers }
-    });
+    const formValue = this.rateForm.value;
+    this.loading = true;
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.loadData();
-      }
-    });
-  }
-
-  deleteItem(item: any): void {
-    if (confirm(`Are you sure you want to delete item "${item.name}"?`)) {
-      this.rateManagementService.deleteItem(item.id).subscribe({
-        next: () => {
-          this.snackBar.open('Item deleted successfully', 'Close', { duration: 3000 });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Error deleting item:', error);
-          this.snackBar.open('Error deleting item', 'Close', { duration: 3000 });
+    this.rateService.setRate({
+      customerId: formValue.customerId,
+      itemId: formValue.itemId,
+      rate: formValue.rate
+    }).subscribe({
+      next: () => {
+        this.showSnackBar('Rate updated successfully', 'success');
+        if (this.selectedCustomerId) {
+          this.onCustomerChange(this.selectedCustomerId);
         }
-      });
-    }
-  }
-
-  // Rate operations
-  setRate(customerItemRate: any): void {
-    const dialogRef = this.dialog.open(SetRateDialogComponent, {
-      width: '400px',
-      data: customerItemRate
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.rateManagementService.setRate({
-          customerId: customerItemRate.customerId,
-          itemId: customerItemRate.itemId,
-          rate: result
-        }).subscribe({
-          next: () => {
-            this.snackBar.open('Rate set successfully', 'Close', { duration: 3000 });
-            // Update the rate in the matrix
-            const index = this.rateMatrix.findIndex(r =>
-              r.customerId === customerItemRate.customerId &&
-              r.itemId === customerItemRate.itemId
-            );
-            if (index !== -1) {
-              this.rateMatrix[index].rate = result;
-              this.rateMatrixDataSource.data = [...this.rateMatrix];
-            }
-          },
-          error: (error) => {
-            console.error('Error setting rate:', error);
-            this.snackBar.open('Error setting rate', 'Close', { duration: 3000 });
-          }
+        this.rateForm.patchValue({
+          itemId: null,
+          rate: 0
         });
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error setting rate:', error);
+        this.showSnackBar('Error updating rate', 'error');
+        this.loading = false;
       }
     });
   }
 
-  changeView(mode: 'customers' | 'items' | 'rates'): void {
-    this.viewMode = mode;
+  showSnackBar(message: string, type: 'success' | 'error'): void {
+    this.snackBar.openFromComponent(AlertComponent, {
+      data: { message, type },
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top'
+    });
   }
 
-  ngAfterViewInit(): void {
-    this.customerDataSource.paginator = this.paginator;
-    this.customerDataSource.sort = this.sort;
-    this.itemDataSource.paginator = this.paginator;
-    this.itemDataSource.sort = this.sort;
-    this.rateMatrixDataSource.paginator = this.paginator;
-    this.rateMatrixDataSource.sort = this.sort;
+  // Helper methods to avoid template binding issues
+  isCustomerSelected(customerId: number): boolean {
+    return this.selectedCustomerId === customerId;
+  }
+
+  getSelectedCustomerName(): string {
+    if (!this.selectedCustomerId || !this.customers) return '';
+    const customer = this.customers.find(c => c.id === this.selectedCustomerId);
+    return customer ? customer.name : '';
   }
 }

@@ -15,6 +15,7 @@ import { Bank } from '../../../../core/models/bank.model';
 import { Stock } from '../../../../core/models/stock.model';
 import { CreateVoucher, UpdateVoucher } from '../../../../core/models/voucher.model';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import { CustomerItemRateService } from 'src/app/core/services/customer-item-rate.service';
 
 @Component({
   selector: 'app-sale-form',
@@ -30,6 +31,7 @@ export class SaleFormComponent implements OnInit {
   banks: Bank[] = [];
   stockItems: Stock[] = [];
   paymentTypes = PaymentType;
+  customerRates: { [key: number]: number } = {};
 
   constructor(
     private formBuilder: FormBuilder,
@@ -40,7 +42,8 @@ export class SaleFormComponent implements OnInit {
     private stockService: StockService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private customerItemRateService: CustomerItemRateService,
   ) {
     this.saleForm = this.createForm();
   }
@@ -59,7 +62,80 @@ export class SaleFormComponent implements OnInit {
   get voucherItemsFormArray(): FormArray {
     return this.saleForm.get('voucherItems') as FormArray;
   }
+onCustomerChange(): void {
+  const customerId = this.saleForm.get('customerId')?.value;
+  if (customerId) {
+    this.customerItemRateService.getRatesByCustomer(customerId).subscribe({
+      next: (rates) => {
+        this.customerRates = {};
+        rates.forEach((rate: any) => {
+          this.customerRates[rate.itemId] = rate.rate;
+        });
 
+        // Update rates for existing items
+        this.updateAllItemRates();
+      },
+      error: (error) => {
+        console.error('Error loading customer rates:', error);
+      }
+    });
+  }
+}
+updateAllItemRates(): void {
+  if (this.voucherItemsFormArray.length > 0) {
+    for (let i = 0; i < this.voucherItemsFormArray.length; i++) {
+      this.updateItemRate(i);
+    }
+  }
+}
+updateItemRate(index: number): void {
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const itemId = itemGroup.get('itemId')?.value;
+
+  if (itemId && this.customerRates[itemId]) {
+    itemGroup.get('rate')?.setValue(this.customerRates[itemId]);
+    this.calculateAmount(index);
+  }
+}
+onItemSelected(index: number): void {
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const itemId = itemGroup.get('itemId')?.value;
+
+  if (itemId) {
+    // First check stock availability
+    const stockItem = this.stockItems.find(s => s.itemId === itemId);
+    if (stockItem) {
+      itemGroup.get('weight')?.setValidators([
+        Validators.required,
+        Validators.min(0.01),
+        Validators.max(stockItem.quantity)
+      ]);
+      itemGroup.get('weight')?.updateValueAndValidity();
+    }
+
+    // Then check for customer-specific rate
+    const customerId = this.saleForm.get('customerId')?.value;
+    if (customerId) {
+      if (this.customerRates[itemId]) {
+        itemGroup.get('rate')?.setValue(this.customerRates[itemId]);
+        this.calculateAmount(index);
+      } else {
+        this.customerItemRateService.getRateByCustomerAndItem(customerId, itemId).subscribe({
+          next: (response: any) => {
+            if (response && response.rate) {
+              this.customerRates[itemId] = response.rate;
+              itemGroup.get('rate')?.setValue(response.rate);
+              this.calculateAmount(index);
+            }
+          },
+          error: (error) => {
+            console.error('Error getting rate:', error);
+          }
+        });
+      }
+    }
+  }
+}
   createForm(): FormGroup {
     return this.formBuilder.group({
       customerId: [null, Validators.required],
@@ -79,7 +155,7 @@ export class SaleFormComponent implements OnInit {
       weight: [item?.weight || 0, [Validators.required, Validators.min(0.01)]],
       kat: [item?.kat || 0, [Validators.required, Validators.min(0)]],
       netWeight: [item?.netWeight || 0, [Validators.required, Validators.min(0.01)]],
-      desiMan: [item?.desiMan || 0, [Validators.required, Validators.min(0.001)]],
+      desiMan: [item?.desiMan || 37.324, [Validators.required, Validators.min(0.01)]],
       rate: [item?.rate || 0, [Validators.required, Validators.min(0.01)]],
       amount: [item?.amount || 0, [Validators.required, Validators.min(0.01)]]
     });
@@ -140,23 +216,23 @@ export class SaleFormComponent implements OnInit {
     this.voucherItemsFormArray.removeAt(index);
   }
 
-  onItemSelected(index: number): void {
-    const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
-    const itemId = itemGroup.get('itemId')?.value;
+  // onItemSelected(index: number): void {
+  //   const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  //   const itemId = itemGroup.get('itemId')?.value;
 
-    if (itemId) {
-      const stockItem = this.stockItems.find(s => s.itemId === itemId);
-      if (stockItem) {
-        // Validation: Check if there is enough stock
-        itemGroup.get('weight')?.setValidators([
-          Validators.required,
-          Validators.min(0.01),
-          Validators.max(stockItem.quantity)
-        ]);
-        itemGroup.get('weight')?.updateValueAndValidity();
-      }
-    }
-  }
+  //   if (itemId) {
+  //     const stockItem = this.stockItems.find(s => s.itemId === itemId);
+  //     if (stockItem) {
+  //       // Validation: Check if there is enough stock
+  //       itemGroup.get('weight')?.setValidators([
+  //         Validators.required,
+  //         Validators.min(0.01),
+  //         Validators.max(stockItem.quantity)
+  //       ]);
+  //       itemGroup.get('weight')?.updateValueAndValidity();
+  //     }
+  //   }
+  // }
 
   calculateNetWeight(index: number): void {
     const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;

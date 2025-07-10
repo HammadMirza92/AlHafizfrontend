@@ -44,13 +44,10 @@
           <div class="form-grid">
             <mat-form-field appearance="outline" class="required-field">
               <mat-label>Customer</mat-label>
-              <mat-select formControlName="customerId" required>
+              <mat-select formControlName="customerId" required (selectionChange)="onCustomerChange()">
                 <mat-option value="">Select Customer</mat-option>
                 <mat-option *ngFor="let customer of customers" [value]="customer.id">
-                  <div class="customer-option">
-                    <!-- <mat-icon class="customer-icon">person</mat-icon> -->
-                    {{ customer.name }}
-                  </div>
+                  {{ customer.name }}
                 </mat-option>
               </mat-select>
               <mat-error *ngIf="purchaseForm.get('customerId')?.hasError('required')">
@@ -183,18 +180,18 @@
                   <div class="item-content">
                     <div class="item-form-grid">
                       <!-- Item Selection -->
-                      <mat-form-field appearance="outline" class="required-field item-select">
-                        <mat-label>Select Item</mat-label>
-                        <mat-select formControlName="itemId" required>
-                          <mat-option value="">Choose an item</mat-option>
-                          <mat-option *ngFor="let item of items" [value]="item.id">
-                            {{ item.name }}
-                          </mat-option>
-                        </mat-select>
-                        <mat-error *ngIf="itemControl.get('itemId')?.hasError('required')">
-                          Item is required
-                        </mat-error>
-                      </mat-form-field>
+                    <mat-form-field appearance="outline" class="required-field item-select">
+                      <mat-label>Select Item</mat-label>
+                      <mat-select formControlName="itemId" required (selectionChange)="onItemSelected(i)">
+                        <mat-option value="">Choose an item</mat-option>
+                        <mat-option *ngFor="let item of items" [value]="item.id">
+                          {{ item.name }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error *ngIf="itemControl.get('itemId')?.hasError('required')">
+                        Item is required
+                      </mat-error>
+                    </mat-form-field>
 
                       <!-- Weight -->
                       <mat-form-field appearance="outline" class="required-field">

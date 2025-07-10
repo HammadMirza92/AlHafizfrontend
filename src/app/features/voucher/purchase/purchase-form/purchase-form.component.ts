@@ -13,6 +13,7 @@ import { Item } from '../../../../core/models/item.model';
 import { Bank } from '../../../../core/models/bank.model';
 import { CreateVoucher, UpdateVoucher } from '../../../../core/models/voucher.model';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
+import { CustomerItemRateService } from 'src/app/core/services/customer-item-rate.service';
 
 @Component({
   selector: 'app-purchase-form',
@@ -29,6 +30,7 @@ export class PurchaseFormComponent implements OnInit {
   paymentTypes = PaymentType;
   loading = false;
   submitting = false;
+  customerRates: { [key: number]: number } = {};
 
   constructor(
     private formBuilder: FormBuilder,
@@ -38,11 +40,74 @@ export class PurchaseFormComponent implements OnInit {
     private bankService: BankService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private customerItemRateService: CustomerItemRateService,
+
   ) {
     this.purchaseForm = this.createForm();
   }
+  onCustomerChange(): void {
+    const customerId = this.purchaseForm.get('customerId')?.value;
+    if (customerId) {
+      this.customerItemRateService.getRatesByCustomer(customerId).subscribe({
+        next: (rates) => {
+          this.customerRates = {};
+          rates.forEach((rate: any) => {
+            this.customerRates[rate.itemId] = rate.rate;
+          });
 
+          // Update rates for existing items
+          this.updateAllItemRates();
+        },
+        error: (error) => {
+          console.error('Error loading customer rates:', error);
+        }
+      });
+    }
+  }
+  updateAllItemRates(): void {
+    if (this.voucherItemsFormArray.length > 0) {
+      for (let i = 0; i < this.voucherItemsFormArray.length; i++) {
+        this.updateItemRate(i);
+      }
+    }
+  }
+  updateItemRate(index: number): void {
+    const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+    const itemId = itemGroup.get('itemId')?.value;
+
+    if (itemId && this.customerRates[itemId]) {
+      itemGroup.get('rate')?.setValue(this.customerRates[itemId]);
+      this.calculateAmount(index);
+    }
+  }
+  onItemSelected(index: number): void {
+    const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+    const itemId = itemGroup.get('itemId')?.value;
+    const customerId = this.purchaseForm.get('customerId')?.value;
+
+    if (itemId && customerId) {
+      // Check if we already have loaded rates for this customer
+      if (this.customerRates[itemId]) {
+        itemGroup.get('rate')?.setValue(this.customerRates[itemId]);
+        this.calculateAmount(index);
+      } else {
+        // If not in our cache, try to get it from the API
+        this.customerItemRateService.getRateByCustomerAndItem(customerId, itemId).subscribe({
+          next: (response: any) => {
+            if (response && response.rate) {
+              this.customerRates[itemId] = response.rate;
+              itemGroup.get('rate')?.setValue(response.rate);
+              this.calculateAmount(index);
+            }
+          },
+          error: (error) => {
+            console.error('Error getting rate:', error);
+          }
+        });
+      }
+    }
+  }
   ngOnInit(): void {
     this.loadDependentData();
 

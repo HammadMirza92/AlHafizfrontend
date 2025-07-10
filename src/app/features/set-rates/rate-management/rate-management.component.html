@@ -1,210 +1,227 @@
-<!-- components/rate-management/rate-management.component.html -->
+<!-- customer-rate-management.component.html -->
 <div class="rate-management-container">
-  <!-- Header -->
+  <!-- Animated Header -->
   <div class="header">
-    <h1>Rate Management</h1>
-    <div class="view-toggles">
-      <button
-        mat-raised-button
-        [color]="viewMode === 'customers' ? 'primary' : ''"
-        (click)="changeView('customers')">
-        Customers
-      </button>
-      <button
-        mat-raised-button
-        [color]="viewMode === 'items' ? 'primary' : ''"
-        (click)="changeView('items')">
-        Items
-      </button>
-      <button
-        mat-raised-button
-        [color]="viewMode === 'rates' ? 'primary' : ''"
-        (click)="changeView('rates')">
-        Rate Matrix
-      </button>
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="fade-in">Customer Item Rate Management</h1>
+        <div class="header-subtitle slide-in">Configure specific rates for each customer and item combination</div>
+      </div>
+      <div class="header-right">
+        <div class="header-icon pulse">
+          <mat-icon>attach_money</mat-icon>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Loading Spinner -->
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner></mat-spinner>
+  <!-- Loading Animation -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <mat-spinner [diameter]="40" color="accent"></mat-spinner>
+    </div>
+    <p class="loading-text">Loading your data...</p>
   </div>
 
-  <!-- Customers View -->
-  <mat-card *ngIf="viewMode === 'customers' && !loading">
-    <mat-card-header>
-      <mat-card-title>Customers Management</mat-card-title>
-      <div class="header-actions">
+  <!-- Main Content -->
+  <div class="content-container" *ngIf="!loading">
+    <div class="rate-management-grid">
+      <!-- Customer Selection Panel -->
+      <mat-card class="customers-panel">
+        <mat-card-header>
+          <div class="card-header-icon">
+            <mat-icon>people_alt</mat-icon>
+          </div>
+          <mat-card-title>
+            Customers
+          </mat-card-title>
+          <span class="badge">{{filteredCustomers.length}}</span>
+        </mat-card-header>
+
+        <!-- Search Filter -->
+        <div class="search-container">
         <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search customers</mat-label>
-          <input matInput [formControl]="customerSearchControl" placeholder="Search...">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        <button mat-raised-button color="primary" (click)="openCustomerDialog()">
-          <mat-icon>add</mat-icon>
-          Add Customer
-        </button>
-      </div>
-    </mat-card-header>
-
-    <mat-card-content>
-      <div class="table-container">
-        <table mat-table [dataSource]="customerDataSource" matSort class="full-width-table">
-          <!-- ID Column -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-            <td mat-cell *matCellDef="let customer">{{customer.id}}</td>
-          </ng-container>
-
-          <!-- Name Column -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-            <td mat-cell *matCellDef="let customer">{{customer.name}}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let customer">
-              <button mat-icon-button color="primary" (click)="openCustomerDialog(customer)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteCustomer(customer)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="customerColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: customerColumns;"></tr>
-        </table>
-
-        <mat-paginator
-          [pageSizeOptions]="[5, 10, 20]"
-          showFirstLastButtons>
-        </mat-paginator>
-      </div>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Items View -->
-  <mat-card *ngIf="viewMode === 'items' && !loading">
-    <mat-card-header>
-      <mat-card-title>Items Management</mat-card-title>
-      <div class="header-actions">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search items</mat-label>
-          <input matInput [formControl]="itemSearchControl" placeholder="Search...">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        <button mat-raised-button color="primary" (click)="openItemDialog()">
-          <mat-icon>add</mat-icon>
-          Add Item
-        </button>
-      </div>
-    </mat-card-header>
-
-    <mat-card-content>
-      <div class="table-container">
-        <table mat-table [dataSource]="itemDataSource" matSort class="full-width-table">
-          <!-- ID Column -->
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-            <td mat-cell *matCellDef="let item">{{item.id}}</td>
-          </ng-container>
-
-          <!-- Name Column -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th>
-            <td mat-cell *matCellDef="let item">{{item.name}}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let item">
-              <button mat-icon-button color="primary" (click)="openItemDialog(item)">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="deleteItem(item)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="itemColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: itemColumns;"></tr>
-        </table>
-
-        <mat-paginator
-          [pageSizeOptions]="[5, 10, 20]"
-          showFirstLastButtons>
-        </mat-paginator>
-      </div>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Rate Matrix View -->
-  <mat-card *ngIf="viewMode === 'rates' && !loading">
-    <mat-card-header>
-      <mat-card-title>Rate Management Matrix</mat-card-title>
-      <div class="header-actions">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search rates</mat-label>
-          <input matInput [formControl]="rateSearchControl" placeholder="Search customer or item...">
+          <mat-label>Search Customers</mat-label>
+          <input matInput type="text" #customerSearch (keyup)="filterCustomers(customerSearch.value)">
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
       </div>
-    </mat-card-header>
 
-    <mat-card-content>
-      <div class="table-container">
-        <table mat-table [dataSource]="rateMatrixDataSource" matSort class="full-width-table">
-          <!-- Customer Name Column -->
-          <ng-container matColumnDef="customerName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th>
-            <td mat-cell *matCellDef="let rate">{{rate.customerName}}</td>
-          </ng-container>
+        <mat-card-content>
+          <div class="customer-list-container">
+            <mat-nav-list>
+               <a mat-list-item
+                *ngFor="let customer of filteredCustomers"
+                (click)="onCustomerChange(customer.id)"
+                [class.selected]="isCustomerSelected(customer.id)"
+                class="customer-item">
+                <div class="customer-item-content">
+                  <div class="customer-avatar" [attr.data-initial]="customer.name.charAt(1)">
+                     <mat-icon>person</mat-icon>
+                  </div>
+                  <div class="customer-info">
+                    <div class="customer-name">{{customer.name}}</div>
+                  </div>
+                </div>
+              </a>
+            </mat-nav-list>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-          <!-- Item Name Column -->
-          <ng-container matColumnDef="itemName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Item</th>
-            <td mat-cell *matCellDef="let rate">{{rate.itemName}}</td>
-          </ng-container>
+      <!-- Rate Management Panel -->
+      <div class="management-panel">
+        <!-- Set Rate Form -->
+        <mat-card class="rate-form-card">
+          <mat-card-header>
+            <div class="card-header-icon">
+              <mat-icon>settings</mat-icon>
+            </div>
+            <mat-card-title>
+              Configure Item Rate
+            </mat-card-title>
+          </mat-card-header>
 
-          <!-- Rate Column -->
-          <ng-container matColumnDef="rate">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Rate</th>
-            <td mat-cell *matCellDef="let rate">
-              <span *ngIf="rate.rate; else noRate" class="rate-value">
-                {{rate.rate | currency}}
-              </span>
-              <ng-template #noRate>
-                <span class="no-rate">Not Set</span>
-              </ng-template>
-            </td>
-          </ng-container>
+          <mat-card-content>
+            <form [formGroup]="rateForm" (ngSubmit)="setRate()">
+              <div class="form-row">
+                <mat-form-field appearance="outline" *ngIf="!selectedCustomerId">
+                  <mat-label>Customer</mat-label>
+                  <mat-select formControlName="customerId" required>
+                    <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                      {{ customer.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>business</mat-icon>
+                  <mat-error *ngIf="rateForm.get('customerId')?.hasError('required')">
+                    Customer is required
+                  </mat-error>
+                </mat-form-field>
 
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let rate">
-              <button mat-raised-button color="primary" (click)="setRate(rate)">
-                <mat-icon>{{rate.rate ? 'edit' : 'add'}}</mat-icon>
-                {{rate.rate ? 'Update' : 'Set'}} Rate
-              </button>
-            </td>
-          </ng-container>
+                <mat-form-field appearance="outline">
+                  <mat-label>Item</mat-label>
+                  <mat-select formControlName="itemId" required>
+                    <mat-option *ngFor="let item of items" [value]="item.id">
+                      {{ item.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-icon matSuffix>inventory_2</mat-icon>
+                  <mat-error *ngIf="rateForm.get('itemId')?.hasError('required')">
+                    Item is required
+                  </mat-error>
+                </mat-form-field>
 
-          <tr mat-header-row *matHeaderRowDef="rateMatrixColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: rateMatrixColumns;"></tr>
-        </table>
+                <mat-form-field appearance="outline">
+                  <mat-label>Rate</mat-label>
+                  <input matInput type="number" step="0.01" formControlName="rate" required>
+                  <div matPrefix class="currency-prefix">₨</div>
+                  <mat-error *ngIf="rateForm.get('rate')?.hasError('required')">
+                    Rate is required
+                  </mat-error>
+                  <mat-error *ngIf="rateForm.get('rate')?.hasError('min')">
+                    Rate must be greater than 0
+                  </mat-error>
+                </mat-form-field>
 
-        <mat-paginator
-          [pageSizeOptions]="[10, 25, 50, 100]"
-          showFirstLastButtons>
-        </mat-paginator>
+                <button mat-raised-button type="submit" [disabled]="rateForm.invalid" class="save-button">
+                  <span class="button-content">
+                    <mat-icon>save</mat-icon>
+                    <span>Set Rate</span>
+                  </span>
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Customer Rates Table -->
+        <mat-card class="rates-table-card" *ngIf="selectedCustomerId">
+          <mat-card-header>
+            <div class="card-header-icon">
+              <mat-icon>list_alt</mat-icon>
+            </div>
+            <mat-card-title>
+              {{ getSelectedCustomerName() }} - Item Rates
+            </mat-card-title>
+            <span class="badge accent">{{customerRates.length}}</span>
+          </mat-card-header>
+
+          <!-- Table Search and Actions -->
+          <div class="table-actions">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search Items</mat-label>
+              <input matInput type="text" #itemSearch>
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <button mat-stroked-button class="export-button">
+              <mat-icon>file_download</mat-icon>
+              Export
+            </button>
+          </div>
+
+          <mat-card-content>
+            <div class="table-container">
+              <table mat-table [dataSource]="customerRates" class="rates-table">
+                <!-- Item Name Column -->
+                <ng-container matColumnDef="itemName">
+                  <th mat-header-cell *matHeaderCellDef>Item</th>
+                  <td mat-cell *matCellDef="let rate">
+                    <div class="item-cell">
+                      <div class="item-icon">
+                        <mat-icon>inventory_2</mat-icon>
+                      </div>
+                      <span>{{ rate.itemName }}</span>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Rate Column -->
+                <ng-container matColumnDef="rate">
+                  <th mat-header-cell *matHeaderCellDef>Rate</th>
+                  <td mat-cell *matCellDef="let rate" class="rate-column">
+                    <div class="rate-badge">
+                      ₨ {{ rate.rate | number:'1.2-2' }}
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let rate" class="actions-cell">
+                    <button mat-icon-button color="primary" (click)="editRate(rate)" matTooltip="Edit Rate" class="edit-button">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" matTooltip="Delete Rate" class="delete-button">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+                <!-- No data row -->
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell no-data-cell" colspan="3">
+                    <div class="no-data-content">
+                      <mat-icon>inbox</mat-icon>
+                      <p>No rates found for this customer</p>
+                      <button mat-stroked-button color="primary">Add First Rate</button>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </mat-card-content>
+
+          <!-- Pagination -->
+          <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" showFirstLastButtons></mat-paginator>
+        </mat-card>
+
+
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

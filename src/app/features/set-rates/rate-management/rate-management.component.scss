@@ -1,0 +1,207 @@
+/* components/rate-management/rate-management.component.scss */
+.rate-management-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    h1 {
+      margin: 0;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .view-toggles {
+      display: flex;
+      gap: 8px;
+
+      button {
+        min-width: 120px;
+      }
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+  }
+
+  mat-card {
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    mat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      mat-card-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .search-field {
+          min-width: 250px;
+
+          .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+          }
+        }
+      }
+    }
+
+    mat-card-content {
+      padding: 0;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    .full-width-table {
+      width: 100%;
+      min-width: 600px;
+
+      th {
+        background-color: #f5f5f5;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      td {
+        border-bottom: 1px solid #e0e0e0;
+        padding: 12px 8px;
+
+        &:first-child {
+          padding-left: 16px;
+        }
+
+        &:last-child {
+          padding-right: 16px;
+        }
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .rate-value {
+        font-weight: 600;
+        color: #2e7d32;
+        padding: 4px 8px;
+        background-color: #e8f5e8;
+        border-radius: 4px;
+        display: inline-block;
+      }
+
+      .no-rate {
+        color: #757575;
+        font-style: italic;
+        padding: 4px 8px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        display: inline-block;
+      }
+    }
+
+    mat-paginator {
+      border-top: 1px solid #e0e0e0;
+      background-color: #fafafa;
+    }
+  }
+
+  // Action buttons
+  button {
+    &.mat-mdc-raised-button {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    &.mat-mdc-icon-button {
+      margin: 0 2px;
+
+      &.mat-primary {
+        color: #1976d2;
+      }
+
+      &.mat-warn {
+        color: #d32f2f;
+      }
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .header {
+      flex-direction: column;
+      align-items: stretch;
+
+      .view-toggles {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+
+    mat-card-header {
+      flex-direction: column;
+      align-items: stretch;
+
+      .header-actions {
+        flex-direction: column;
+
+        .search-field {
+          min-width: 100%;
+        }
+      }
+    }
+
+    .table-container {
+      .full-width-table {
+        min-width: 800px;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+
+    .header h1 {
+      font-size: 1.5rem;
+    }
+
+    .view-toggles button {
+      min-width: 100px;
+      font-size: 0.875rem;
+    }
+
+    mat-card-title {
+      font-size: 1.25rem !important;
+    }
+  }
+}

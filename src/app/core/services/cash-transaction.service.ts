@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { CashTransaction, CreateCashTransaction, CashTransactionFilter } from '../models/cash-transaction.model';
 import { HttpParams } from '@angular/common/http';
+import { PaymentType } from '../models/enums.model';
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +34,7 @@ export class CashTransactionService {
   }
 
   filterCashTransactions(filter: CashTransactionFilter): Observable<CashTransaction[]> {
+    debugger;
     let params = new HttpParams();
 
     if (filter.fromDate) {
@@ -43,14 +45,40 @@ export class CashTransactionService {
       params = params.set('toDate', filter.toDate.toISOString());
     }
 
-    if (filter.customerId) {
+    if (filter.customerId != null) {
       params = params.set('customerId', filter.customerId.toString());
     }
 
-    if (filter.isCashReceived !== undefined) {
+    if (filter.paymentType != null)  {
+      params = params.set('paymentType', filter.paymentType.toString());
+    }
+
+    if (filter.isCashReceived !== null && filter.isCashReceived !== undefined) {
       params = params.set('isCashReceived', filter.isCashReceived.toString());
     }
 
     return this.apiService.get<CashTransaction[]>(`${this.path}/filter`, params);
+  }
+
+  filterTransactionsByCustomerAndDate(customerId: number, fromDate?: Date, toDate?: Date, paymentType?: PaymentType): Observable<CashTransaction[]> {
+    let params = new HttpParams().set('customerId', customerId.toString());
+
+    if (fromDate) {
+      params = params.set('fromDate', fromDate.toISOString());
+    }
+
+    if (toDate) {
+      params = params.set('toDate', toDate.toISOString());
+    }
+
+    if (paymentType) {
+      params = params.set('paymentType', paymentType.toString());
+    }
+
+    return this.apiService.get<CashTransaction[]>(`${this.path}/filter-to-date`, params);
+  }
+
+  updateBalance(updateData: { customerId: number, paymentType: PaymentType, amountSpent: number }): Observable<void> {
+    return this.apiService.post<void, any>(`${this.path}/update-balance`, updateData);
   }
 }

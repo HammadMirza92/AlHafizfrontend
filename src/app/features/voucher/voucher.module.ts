@@ -1,165 +1,128 @@
+// src/app/features/voucher/voucher.module.ts
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
-import { VoucherListComponent } from './voucher-list/voucher-list.component';
-import { PurchaseFormComponent } from './purchase-form/purchase-form.component';
-import { SaleFormComponent } from './sale-form/sale-form.component';
-import { ExpenseFormComponent } from './expense-form/expense-form.component';
-import { HazriFormComponent } from './hazri-form/hazri-form.component';
-import { CashPaidFormComponent } from './cash-paid-form/cash-paid-form.component';
-import { CashReceivedFormComponent } from './cash-received-form/cash-received-form.component';
-import { VoucherDetailComponent } from './voucher-detail/voucher-detail.component';
+
+// Purchase components
+import { PurchaseFormComponent } from './purchase/purchase-form/purchase-form.component';
+import { PurchaseListComponent } from './purchase/purchase-list/purchase-list.component';
+import { PurchaseDetailComponent } from './purchase/purchase-detail/purchase-detail.component';
+
+// Sale components
+import { SaleFormComponent } from './sale/sale-form/sale-form.component';
+import { SaleListComponent } from './sale/sale-list/sale-list.component';
+import { SaleDetailComponent } from './sale/sale-detail/sale-detail.component';
+
+// Expense components
+import { ExpenseFormComponent } from './expense/expense-form/expense-form.component';
+import { ExpenseListComponent } from './expense/expense-list/expense-list.component';
+import { ExpenseDetailComponent } from './expense/expense-detail/expense-detail.component';
+
+// Hazri components
+import { HazriFormComponent } from './hazri/hazri-form/hazri-form.component';
+import { HazriListComponent } from './hazri/hazri-list/hazri-list.component';
+import { HazriDetailComponent } from './hazri/hazri-detail/hazri-detail.component';
+
+// Cash Paid components
+import { CashPaidFormComponent } from './cash-paid/cash-paid-form/cash-paid-form.component';
+import { CashPaidListComponent } from './cash-paid/cash-paid-list/cash-paid-list.component';
+import { CashPaidDetailComponent } from './cash-paid/cash-paid-detail/cash-paid-detail.component';
+
+// Cash Received components
+import { CashReceivedFormComponent } from './cash-received/cash-received-form/cash-received-form.component';
+import { CashReceivedListComponent } from './cash-received/cash-received-list/cash-received-list.component';
+import { CashReceivedDetailComponent } from './cash-received/cash-received-detail/cash-received-detail.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: VoucherListComponent
-  },
+  { path: '', redirectTo: 'purchase', pathMatch: 'full' },
   {
     path: 'purchase',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 1 }
-      },
-      {
-        path: 'new',
-        component: PurchaseFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: PurchaseFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: PurchaseListComponent },
+      { path: 'new', component: PurchaseFormComponent },
+      { path: 'edit/:id', component: PurchaseFormComponent },
+      { path: ':id', component: PurchaseDetailComponent }
     ]
   },
   {
     path: 'sale',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 2 }
-      },
-      {
-        path: 'new',
-        component: SaleFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: SaleFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: SaleListComponent },
+      { path: 'new', component: SaleFormComponent },
+      { path: 'edit/:id', component: SaleFormComponent },
+      { path: ':id', component: SaleDetailComponent }
     ]
   },
   {
     path: 'expense',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 3 }
-      },
-      {
-        path: 'new',
-        component: ExpenseFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: ExpenseFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: ExpenseListComponent },
+      { path: 'new', component: ExpenseFormComponent },
+      { path: 'edit/:id', component: ExpenseFormComponent },
+      { path: ':id', component: ExpenseDetailComponent }
     ]
   },
   {
     path: 'hazri',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 4 }
-      },
-      {
-        path: 'new',
-        component: HazriFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: HazriFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: HazriListComponent },
+      { path: 'new', component: HazriFormComponent },
+      { path: 'edit/:id', component: HazriFormComponent },
+      { path: ':id', component: HazriDetailComponent }
     ]
   },
   {
     path: 'cash-paid',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 5 }
-      },
-      {
-        path: 'new',
-        component: CashPaidFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: CashPaidFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: CashPaidListComponent },
+      { path: 'new', component: CashPaidFormComponent },
+      { path: 'edit/:id', component: CashPaidFormComponent },
+      { path: ':id', component: CashPaidDetailComponent }
     ]
   },
   {
     path: 'cash-received',
     children: [
-      {
-        path: '',
-        component: VoucherListComponent,
-        data: { voucherType: 6 }
-      },
-      {
-        path: 'new',
-        component: CashReceivedFormComponent
-      },
-      {
-        path: 'edit/:id',
-        component: CashReceivedFormComponent
-      },
-      {
-        path: ':id',
-        component: VoucherDetailComponent
-      }
+      { path: '', component: CashReceivedListComponent },
+      { path: 'new', component: CashReceivedFormComponent },
+      { path: 'edit/:id', component: CashReceivedFormComponent },
+      { path: ':id', component: CashReceivedDetailComponent }
     ]
   }
 ];
 
 @NgModule({
   declarations: [
-    VoucherListComponent,
+    // Purchase components
     PurchaseFormComponent,
+    PurchaseListComponent,
+    PurchaseDetailComponent,
+
+    // Sale components
     SaleFormComponent,
+    SaleListComponent,
+    SaleDetailComponent,
+
+    // Expense components
     ExpenseFormComponent,
+    ExpenseListComponent,
+    ExpenseDetailComponent,
+
+    // Hazri components
     HazriFormComponent,
+    HazriListComponent,
+    HazriDetailComponent,
+
+    // Cash Paid components
     CashPaidFormComponent,
+    CashPaidListComponent,
+    CashPaidDetailComponent,
+
+    // Cash Received components
     CashReceivedFormComponent,
-    VoucherDetailComponent
+    CashReceivedListComponent,
+    CashReceivedDetailComponent
   ],
   imports: [
     CommonModule,

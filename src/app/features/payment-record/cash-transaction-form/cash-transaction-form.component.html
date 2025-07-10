@@ -1,0 +1,86 @@
+<h2 mat-dialog-title>
+  {{ isEditMode ? 'Edit Cash Transaction' : 'Create New Cash Transaction' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="transactionForm">
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Customer</mat-label>
+        <mat-select formControlName="customerId" required>
+          <mat-option *ngFor="let customer of customers" [value]="customer.id">
+            {{ customer.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="transactionForm.get('customerId')?.hasError('required')">
+          Customer is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Payment Type</mat-label>
+        <mat-select formControlName="paymentType" required>
+          <mat-option *ngFor="let type of paymentTypes" [value]="type">
+            {{ type }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="transactionForm.get('paymentType')?.hasError('required')">
+          Payment type is required
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="transactionForm.get('paymentType')?.value === 'Bank'">
+        <mat-label>Bank</mat-label>
+        <mat-select formControlName="bankId" required>
+          <mat-option *ngFor="let bank of banks" [value]="bank.id">
+            {{ bank.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="transactionForm.get('bankId')?.hasError('required')">
+          Bank is required for bank payments
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Amount</mat-label>
+        <input matInput type="number" formControlName="amount" required>
+        <span matPrefix>$&nbsp;</span>
+        <mat-error *ngIf="transactionForm.get('amount')?.hasError('required')">
+          Amount is required
+        </mat-error>
+        <mat-error *ngIf="transactionForm.get('amount')?.hasError('min')">
+          Amount must be greater than 0
+        </mat-error>
+      </mat-form-field>
+
+      <mat-checkbox formControlName="isCashReceived" color="primary">
+        Cash Received
+      </mat-checkbox>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Payment Details</mat-label>
+        <input matInput formControlName="paymentDetails">
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Additional Details</mat-label>
+        <textarea matInput formControlName="details" rows="3"></textarea>
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="transactionForm.invalid">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

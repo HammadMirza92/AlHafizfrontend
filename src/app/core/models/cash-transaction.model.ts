@@ -29,4 +29,5 @@ export interface CashTransactionFilter {
   toDate?: Date;
   customerId?: number;
   isCashReceived?: boolean;
+  paymentType?: PaymentType;
 }

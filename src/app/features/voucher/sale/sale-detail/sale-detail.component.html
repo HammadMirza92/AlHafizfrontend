@@ -1,0 +1,149 @@
+<div class="sale-detail-container">
+  <div class="header">
+    <h1>Sale Voucher Detail</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" [routerLink]="['../edit', voucher?.id]">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+      <button mat-raised-button color="primary" routerLink="/vouchers/sale">
+        <mat-icon>list</mat-icon>
+        All Sale Vouchers
+      </button>
+    </div>
+  </div>
+
+  <mat-card *ngIf="voucher">
+    <mat-card-content>
+      <div class="detail-section">
+        <h2>Basic Information</h2>
+
+        <div class="detail-row">
+          <div class="detail-label">ID:</div>
+          <div class="detail-value">{{ voucher.id }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Date:</div>
+          <div class="detail-value">{{ voucher.createdAt | date: 'medium' }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Customer:</div>
+          <div class="detail-value">{{ voucher.customerName }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Payment Type:</div>
+          <div class="detail-value">{{ getPaymentTypeText(voucher.paymentType) }}</div>
+        </div>
+
+        <ng-container *ngIf="voucher.bankId">
+          <div class="detail-row">
+            <div class="detail-label">Bank:</div>
+            <div class="detail-value">{{ voucher.bankName }}</div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="voucher.paymentDetails">
+          <div class="detail-row">
+            <div class="detail-label">Payment Details:</div>
+            <div class="detail-value">{{ voucher.paymentDetails }}</div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="voucher.gariNo">
+          <div class="detail-row">
+            <div class="detail-label">Gari No:</div>
+            <div class="detail-value">{{ voucher.gariNo }}</div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="voucher.details">
+          <div class="detail-row">
+            <div class="detail-label">Details:</div>
+            <div class="detail-value">{{ voucher.details }}</div>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="detail-section" *ngIf="voucher.voucherItems && voucher.voucherItems.length > 0">
+        <h2>Items</h2>
+
+        <table mat-table [dataSource]="voucher.voucherItems" class="mat-elevation-z1">
+          <!-- Item Column -->
+          <ng-container matColumnDef="item">
+            <th mat-header-cell *matHeaderCellDef>Item</th>
+            <td mat-cell *matCellDef="let item">{{ item.itemName }}</td>
+            <td mat-footer-cell *matFooterCellDef><strong>Total</strong></td>
+          </ng-container>
+
+          <!-- Weight Column -->
+          <ng-container matColumnDef="weight">
+            <th mat-header-cell *matHeaderCellDef>Weight (kg)</th>
+            <td mat-cell *matCellDef="let item">{{ item.weight }}</td>
+            <td mat-footer-cell *matFooterCellDef>{{ getTotalWeight() }}</td>
+          </ng-container>
+
+          <!-- Kat Column -->
+          <ng-container matColumnDef="kat">
+            <th mat-header-cell *matHeaderCellDef>Kat (kg)</th>
+            <td mat-cell *matCellDef="let item">{{ item.kat }}</td>
+            <td mat-footer-cell *matFooterCellDef>{{ getTotalKat() }}</td>
+          </ng-container>
+
+          <!-- Net Weight Column -->
+          <ng-container matColumnDef="netWeight">
+            <th mat-header-cell *matHeaderCellDef>Net Weight (kg)</th>
+            <td mat-cell *matCellDef="let item">{{ item.netWeight }}</td>
+            <td mat-footer-cell *matFooterCellDef>{{ getTotalNetWeight() }}</td>
+          </ng-container>
+
+          <!-- Desi Man Column -->
+          <ng-container matColumnDef="desiMan">
+            <th mat-header-cell *matHeaderCellDef>Desi Man</th>
+            <td mat-cell *matCellDef="let item">{{ item.desiMan }}</td>
+            <td mat-footer-cell *matFooterCellDef>{{ getTotalDesiMan() }}</td>
+          </ng-container>
+
+          <!-- Rate Column -->
+          <ng-container matColumnDef="rate">
+            <th mat-header-cell *matHeaderCellDef>Rate</th>
+            <td mat-cell *matCellDef="let item">{{ item.rate }}</td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-container>
+
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let item">{{ item.amount | currency }}</td>
+            <td mat-footer-cell *matFooterCellDef>{{ getTotalAmount() | currency }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="itemDisplayColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: itemDisplayColumns;"></tr>
+          <tr mat-footer-row *matFooterRowDef="itemDisplayColumns"></tr>
+        </table>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button routerLink="/vouchers/sale">Back</button>
+      <button mat-raised-button color="primary" (click)="printVoucher()">
+        <mat-icon>print</mat-icon>
+        Print
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <div *ngIf="!voucher && !loading" class="not-found">
+    <h2>Voucher not found</h2>
+    <p>The Sale Voucher you are looking for does not exist or has been deleted.</p>
+    <button mat-raised-button color="primary" routerLink="/vouchers/sale">Go Back</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner [diameter]="50"></mat-spinner>
+    <p>Loading Sale Voucher details...</p>
+  </div>
+</div>

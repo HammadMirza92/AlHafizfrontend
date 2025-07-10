@@ -1,0 +1,48 @@
+.expense-form-container {
+  padding: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+    }
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    mat-form-field {
+      flex: 1;
+      min-width: 200px;
+    }
+  }
+
+  .details-field {
+    width: 100%;
+    margin-top: 20px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+
+  p {
+    margin-top: 16px;
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.spinner-in-button {
+  display: inline-block;
+  margin-right: 8px;
+}

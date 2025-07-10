@@ -1,0 +1,335 @@
+<div class="purchase-detail-container">
+  <!-- Header Section -->
+  <div class="header" *ngIf="!loading">
+    <div class="header-left">
+      <h1>Purchase Voucher Details</h1>
+      <div class="voucher-id" *ngIf="voucher">
+        <mat-icon>receipt</mat-icon>
+        Voucher #{{ voucher.id }}
+      </div>
+    </div>
+    <div class="header-actions" *ngIf="voucher">
+      <button mat-stroked-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to List
+      </button>
+      <button mat-stroked-button color="accent" (click)="editVoucher()">
+        <mat-icon>edit</mat-icon>
+        Edit Voucher
+      </button>
+      <button mat-raised-button color="primary" (click)="printVoucher()">
+        <mat-icon>print</mat-icon>
+        Print Voucher
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-card class="loading-card">
+      <mat-card-content>
+        <div class="loading-content">
+          <mat-spinner [diameter]="50"></mat-spinner>
+          <h3>Loading Purchase Voucher Details...</h3>
+          <p>Please wait while we fetch the voucher information.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Voucher Details -->
+  <div class="voucher-content" *ngIf="voucher && !loading">
+    <!-- Basic Information Card -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>info</mat-icon>
+          Basic Information
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">
+              <mat-icon>tag</mat-icon>
+              Voucher ID
+            </div>
+            <div class="info-value voucher-id-badge">#{{ voucher.id }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">
+              <mat-icon>event</mat-icon>
+              Date & Time
+            </div>
+            <div class="info-value">
+              <div class="date-time">
+                <span class="date">{{ voucher.createdAt | date:'fullDate' }}</span>
+                <span class="time">{{ voucher.createdAt | date:'shortTime' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">
+              <mat-icon>person</mat-icon>
+              Customer
+            </div>
+            <div class="info-value customer-name">{{ voucher.customerName }}</div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">
+              <mat-icon>{{ getPaymentTypeIcon(voucher.paymentType) }}</mat-icon>
+              Payment Type
+            </div>
+            <div class="info-value">
+              <span class="payment-badge" [ngClass]="getPaymentTypeClass(voucher.paymentType)">
+                {{ getPaymentTypeText(voucher.paymentType) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="info-item" *ngIf="voucher.bankName">
+            <div class="info-label">
+              <mat-icon>account_balance</mat-icon>
+              Bank
+            </div>
+            <div class="info-value">{{ voucher.bankName }}</div>
+          </div>
+
+          <div class="info-item" *ngIf="voucher.gariNo">
+            <div class="info-label">
+              <mat-icon>local_shipping</mat-icon>
+              Gari Number
+            </div>
+            <div class="info-value gari-number">{{ voucher.gariNo }}</div>
+          </div>
+
+          <div class="info-item full-width" *ngIf="voucher.paymentDetails">
+            <div class="info-label">
+              <mat-icon>description</mat-icon>
+              Payment Details
+            </div>
+            <div class="info-value">{{ voucher.paymentDetails }}</div>
+          </div>
+
+          <div class="info-item full-width" *ngIf="voucher.details">
+            <div class="info-label">
+              <mat-icon>notes</mat-icon>
+              Additional Details
+            </div>
+            <div class="info-value">{{ voucher.details }}</div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Summary Card -->
+    <mat-card class="summary-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>summarize</mat-icon>
+          Purchase Summary
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-grid">
+          <div class="summary-item total-amount">
+            <div class="summary-icon">
+              <mat-icon>attach_money</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Total Amount</div>
+              <div class="summary-value">{{ getTotalAmount() | currency:'USD':'symbol':'1.2-2' }}</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <mat-icon>scale</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Total Weight</div>
+              <div class="summary-value">{{ getTotalWeight() | number:'1.2-2' }} kg</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <mat-icon>balance</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Net Weight</div>
+              <div class="summary-value">{{ getTotalNetWeight() | number:'1.2-2' }} kg</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <mat-icon>inventory</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Total Items</div>
+              <div class="summary-value">{{ voucher.voucherItems?.length || 0 }}</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <mat-icon>trending_up</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Average Rate</div>
+              <div class="summary-value">{{ getAverageRate() | number:'1.2-2' }}</div>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <mat-icon>functions</mat-icon>
+            </div>
+            <div class="summary-content">
+              <div class="summary-label">Total Desi Man</div>
+              <div class="summary-value">{{ getTotalDesiMan() | number:'1.2-2' }}</div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Items Details Card -->
+    <mat-card class="items-card" *ngIf="voucher.voucherItems && voucher.voucherItems.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>inventory_2</mat-icon>
+          Item Details ({{ voucher.voucherItems.length }} items)
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource]="voucher.voucherItems" class="items-table mat-elevation-z2">
+
+            <!-- Item Name Column -->
+            <ng-container matColumnDef="item">
+              <th mat-header-cell *matHeaderCellDef class="item-header">
+                <strong>Item Name</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="item-cell">
+                <div class="item-info">
+                  <mat-icon class="item-icon">inventory_2</mat-icon>
+                  <span class="item-name">{{ item.itemName }}</span>
+                </div>
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-label">
+                <strong>TOTALS</strong>
+              </td>
+            </ng-container>
+
+            <!-- Weight Column -->
+            <ng-container matColumnDef="weight">
+              <th mat-header-cell *matHeaderCellDef class="numeric-header">
+                <strong>Weight (kg)</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="numeric-cell">
+                {{ item.weight | number:'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-total">
+                <strong>{{ getTotalWeight() | number:'1.2-2' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Kat Column -->
+            <ng-container matColumnDef="kat">
+              <th mat-header-cell *matHeaderCellDef class="numeric-header">
+                <strong>Kat (kg)</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="numeric-cell">
+                {{ item.kat | number:'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-total">
+                <strong>{{ getTotalKat() | number:'1.2-2' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Net Weight Column -->
+            <ng-container matColumnDef="netWeight">
+              <th mat-header-cell *matHeaderCellDef class="numeric-header">
+                <strong>Net Weight (kg)</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="numeric-cell highlight">
+                {{ item.netWeight | number:'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-total highlight">
+                <strong>{{ getTotalNetWeight() | number:'1.2-2' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Desi Man Column -->
+            <ng-container matColumnDef="desiMan">
+              <th mat-header-cell *matHeaderCellDef class="numeric-header">
+                <strong>Desi Man</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="numeric-cell">
+                {{ item.desiMan | number:'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-total">
+                <strong>{{ getTotalDesiMan() | number:'1.2-2' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Rate Column -->
+            <ng-container matColumnDef="rate">
+              <th mat-header-cell *matHeaderCellDef class="numeric-header">
+                <strong>Rate</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="numeric-cell rate-cell">
+                {{ item.rate | number:'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-average">
+                <em>Avg: {{ getAverageRate() | number:'1.2-2' }}</em>
+              </td>
+            </ng-container>
+
+            <!-- Amount Column -->
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef class="amount-header">
+                <strong>Amount</strong>
+              </th>
+              <td mat-cell *matCellDef="let item" class="amount-cell">
+                {{ item.amount | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+              <td mat-footer-cell *matFooterCellDef class="footer-amount">
+                <strong>{{ getTotalAmount() | currency:'USD':'symbol':'1.2-2' }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Table Structure -->
+            <tr mat-header-row *matHeaderRowDef="itemDisplayColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: itemDisplayColumns;" class="item-row"></tr>
+            <tr mat-footer-row *matFooterRowDef="itemDisplayColumns" class="totals-row"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="!voucher && !loading">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <div class="error-content">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h2>Voucher Not Found</h2>
+          <p>The Purchase Voucher you are looking for does not exist or has been deleted.</p>
+          <div class="error-actions">
+            <button mat-raised-button color="primary" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon>
+              Go Back to List
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

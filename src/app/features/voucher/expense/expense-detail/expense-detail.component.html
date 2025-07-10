@@ -1,0 +1,82 @@
+<div class="expense-detail-container">
+  <div class="header">
+    <h1>Expense Voucher Detail</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" [routerLink]="['../edit', voucher?.id]">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+      <button mat-raised-button color="primary" routerLink="/vouchers/expense">
+        <mat-icon>list</mat-icon>
+        All Expense Vouchers
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner [diameter]="50"></mat-spinner>
+    <p>Loading Expense Voucher details...</p>
+  </div>
+
+  <mat-card *ngIf="voucher && !loading">
+    <mat-card-content>
+      <div class="detail-section">
+        <h2>Basic Information</h2>
+
+        <div class="detail-row">
+          <div class="detail-label">ID:</div>
+          <div class="detail-value">{{ voucher.id }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Date:</div>
+          <div class="detail-value">{{ voucher.createdAt | date: 'medium' }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="voucher.expenseHeadName">
+          <div class="detail-label">Expense Head:</div>
+          <div class="detail-value">{{ voucher.expenseHeadName }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Payment Type:</div>
+          <div class="detail-value">{{ getPaymentTypeText(voucher.paymentType) }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="voucher.bankName">
+          <div class="detail-label">Bank:</div>
+          <div class="detail-value">{{ voucher.bankName }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="voucher.paymentDetails">
+          <div class="detail-label">Payment Details:</div>
+          <div class="detail-value">{{ voucher.paymentDetails }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="voucher.amount">
+          <div class="detail-label">Amount:</div>
+          <div class="detail-value">{{ voucher.amount | currency:'PKR':'symbol':'1.2-2' }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="voucher.details">
+          <div class="detail-label">Details:</div>
+          <div class="detail-value">{{ voucher.details }}</div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button routerLink="/vouchers/expense">Back</button>
+      <button mat-raised-button color="primary" (click)="printVoucher()">
+        <mat-icon>print</mat-icon>
+        Print
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <div *ngIf="!voucher && !loading" class="not-found">
+    <h2>Voucher not found</h2>
+    <p>The Expense Voucher you are looking for does not exist or has been deleted.</p>
+    <button mat-raised-button color="primary" routerLink="/vouchers/expense">Go Back</button>
+  </div>
+</div>

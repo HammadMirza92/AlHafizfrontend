@@ -24,7 +24,7 @@ export class VoucherService {
     return this.apiService.post<Voucher, CreateVoucher>(this.path, voucher);
   }
 
-  updateVoucher(id: number, voucher: UpdateVoucher): Observable<Voucher> {
+  updateVoucher(id: number, voucher: any): Observable<Voucher> {
     return this.apiService.put<Voucher, UpdateVoucher>(`${this.path}/${id}`, voucher);
   }
 
@@ -57,4 +57,5 @@ export class VoucherService {
 
     return this.apiService.get<Voucher[]>(`${this.path}/filter`, params);
   }
+
 }

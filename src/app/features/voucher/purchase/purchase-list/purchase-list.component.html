@@ -1,0 +1,274 @@
+<div class="purchase-list-container">
+  <!-- Header Section -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Purchase Vouchers</h1>
+      <div class="header-stats" *ngIf="!loading">
+        <span class="stat-item">
+          <mat-icon>receipt</mat-icon>
+          {{ dataSource.data.length }} Vouchers
+        </span>
+        <span class="stat-item">
+          <mat-icon>attach_money</mat-icon>
+          <!-- {{ getTotalAmount() }} --> 2222
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="exportToCSV()" [disabled]="loading">
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
+      <button mat-raised-button color="primary" routerLink="/vouchers/purchase/new">
+        <mat-icon>add</mat-icon>
+        New Purchase Voucher
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <mat-card class="filter-card" [class.loading]="loading">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Filters
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filterForm" (ngSubmit)="onFilter()">
+        <div class="filter-grid">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>From Date</mat-label>
+            <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate">
+            <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>To Date</mat-label>
+            <input matInput [matDatepicker]="toDatePicker" formControlName="toDate">
+            <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+            <mat-datepicker #toDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Customer</mat-label>
+            <mat-select formControlName="customerId">
+              <mat-option [value]="null">All Customers</mat-option>
+              <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                {{ customer.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Payment Type</mat-label>
+            <mat-select formControlName="paymentType">
+              <mat-option [value]="null">All Payment Types</mat-option>
+              <mat-option value="Cash">Cash</mat-option>
+              <mat-option value="Bank">Bank</mat-option>
+              <mat-option value="Credit">Credit</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+            <mat-icon>search</mat-icon>
+            Apply Filters
+          </button>
+          <button mat-button color="warn" type="button" (click)="resetFilter()" [disabled]="loading">
+            <mat-icon>clear</mat-icon>
+            Reset
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Data Table Section -->
+  <mat-card class="table-card">
+    <mat-card-content class="table-content">
+      <!-- Loading Indicator -->
+      <div class="loading-overlay" *ngIf="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading purchase vouchers...</p>
+      </div>
+
+      <!-- Table Container -->
+      <div class="table-container" [class.loading]="loading">
+        <table mat-table [dataSource]="dataSource" matSort class="voucher-table">
+
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="id-column">
+              <strong>Voucher</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher" class="id-column">
+              <span class="voucher-id">#{{ voucher.id }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <strong>Date</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <div class="date-info">
+                <span class="date">{{ voucher.createdAt | date:'MMM dd, yyyy' }}</span>
+                <span class="time">{{ voucher.createdAt | date:'HH:mm' }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Customer Column -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <strong>Customer</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <div class="customer-info">
+                <mat-icon class="customer-icon">person</mat-icon>
+                <span class="customer-name">{{ voucher.customerName }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Payment Type Column -->
+          <ng-container matColumnDef="paymentType">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <strong>Payment</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <span class="payment-badge" [ngClass]="getPaymentTypeClass(voucher.paymentType)">
+                <mat-icon class="payment-icon">{{ voucher.paymentType === 'Cash' ? 'payments' : voucher.paymentType === 'Bank' ? 'account_balance' : 'credit_card' }}</mat-icon>
+                {{voucher.paymentType}}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Bank Column -->
+          <ng-container matColumnDef="bank">
+            <th mat-header-cell *matHeaderCellDef>
+              <strong>Bank</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <span *ngIf="voucher.bankName; else noBankTemplate" class="bank-name">
+                {{ voucher.bankName }}
+              </span>
+              <ng-template #noBankTemplate>
+                <span class="no-data">-</span>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <!-- Total Amount Column -->
+          <ng-container matColumnDef="totalAmount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="amount-column">
+              <strong>Total Amount</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher" class="amount-column" >
+              <div class="amount-info">
+                <span class="amount">{{ getTotalAmount(voucher) }}</span>
+                <span class="items-count">{{ getTotalItems(voucher) }} item(s)</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Total Weight Column -->
+          <ng-container matColumnDef="totalWeight">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <strong>Total Weight</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <div class="weight-info">
+                <mat-icon class="weight-icon">scale</mat-icon>
+                <span class="weight">{{ getTotalWeight(voucher) | number:'1.2-2' }} kg</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Gari No Column -->
+          <ng-container matColumnDef="gariNo">
+            <th mat-header-cell *matHeaderCellDef>
+              <strong>Gari No</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <span *ngIf="voucher.gariNo; else noGariTemplate" class="gari-no">
+                <mat-icon class="gari-icon">local_shipping</mat-icon>
+                {{ voucher.gariNo }}
+              </span>
+              <ng-template #noGariTemplate>
+                <span class="no-data">-</span>
+              </ng-template>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="actions-column">
+              <strong>Actions</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher" class="actions-column">
+              <div class="action-buttons">
+                <button mat-icon-button
+                        color="primary"
+                        (click)="viewVoucherDetails(voucher)"
+                        matTooltip="View Details"
+                        class="action-btn">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+
+                <button mat-icon-button
+                        color="accent"
+                        (click)="editVoucher(voucher)"
+                        matTooltip="Edit Voucher"
+                        class="action-btn">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button
+                        color="warn"
+                        (click)="deleteVoucher(voucher)"
+                        matTooltip="Delete Voucher"
+                        class="action-btn">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Table Rows -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+              class="voucher-row"
+              (click)="viewVoucherDetails(row)"></tr>
+
+          <!-- No Data Row -->
+          <tr class="mat-row no-data-row" *matNoDataRow>
+            <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+              <div class="no-data-content">
+                <mat-icon>receipt_long</mat-icon>
+                <h3>No Purchase Vouchers Found</h3>
+                <p>Try adjusting your filters or create a new purchase voucher.</p>
+                <button mat-raised-button color="primary" routerLink="/vouchers/purchase/new">
+                  <mat-icon>add</mat-icon>
+                  Create First Voucher
+                </button>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Pagination -->
+        <mat-paginator
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          [pageSize]="25"
+          showFirstLastButtons
+          class="table-paginator">
+        </mat-paginator>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

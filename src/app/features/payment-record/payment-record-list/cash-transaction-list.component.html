@@ -1,0 +1,84 @@
+<div class="container">
+  <div class="header">
+    <h1>Cash Transactions</h1>
+    <button mat-raised-button color="primary" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon> New Transaction
+    </button>
+  </div>
+
+  <app-cash-transaction-filter (filterChanged)="onFilterChanged($event)"></app-cash-transaction-filter>
+
+  <div class="search-container">
+    <mat-form-field appearance="outline">
+      <mat-label>Search</mat-label>
+      <input matInput (keyup)="applyFilter($event)" placeholder="Search transactions">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <div class="mat-elevation-z8 table-container">
+    <mat-table [dataSource]="dataSource" matSort>
+      <!-- Customer Column -->
+      <ng-container matColumnDef="customerName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Customer</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.customerName || 'N/A' }}</mat-cell>
+      </ng-container>
+
+      <!-- Payment Type Column -->
+      <ng-container matColumnDef="paymentType">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Payment Type</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ getPaymentTypeDisplay(row.paymentType) }}</mat-cell>
+      </ng-container>
+
+      <!-- Amount Column -->
+      <ng-container matColumnDef="amount">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Amount</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.amount | currency }}</mat-cell>
+      </ng-container>
+
+      <!-- Payment Details Column -->
+      <ng-container matColumnDef="paymentDetails">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Details</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.paymentDetails || 'N/A' }}</mat-cell>
+      </ng-container>
+
+      <!-- Received Column -->
+      <ng-container matColumnDef="isCashReceived">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Received</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-icon [style.color]="row.isCashReceived ? 'green' : 'red'">
+            {{ row.isCashReceived ? 'check_circle' : 'cancel' }}
+          </mat-icon>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="createdAt">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Date</mat-header-cell>
+        <mat-cell *matCellDef="let row">{{ row.createdAt | date: 'medium' }}</mat-cell>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" (click)="openEditDialog(row)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteTransaction(row.id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+  </div>
+
+  <div *ngIf="loading" class="loading-overlay">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+</div>

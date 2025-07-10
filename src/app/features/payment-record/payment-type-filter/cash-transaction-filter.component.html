@@ -1,0 +1,69 @@
+<div class="filter-container">
+  <form [formGroup]="filterForm" (ngSubmit)="onSubmit()">
+    <div class="filter-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Customer</mat-label>
+        <mat-select formControlName="customerId">
+          <mat-option [value]="null">All Customers</mat-option>
+          <mat-option *ngFor="let customer of customers" [value]="customer.id">
+            {{ customer.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Payment Type</mat-label>
+        <mat-select formControlName="paymentType">
+          <mat-option [value]="null">All Types</mat-option>
+          <mat-option *ngFor="let type of paymentTypes" [value]="type">
+            {{ type }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="filterForm.get('paymentType')?.value === 'Bank'">
+        <mat-label>Bank</mat-label>
+        <mat-select formControlName="bankId">
+          <mat-option [value]="null">All Banks</mat-option>
+          <mat-option *ngFor="let bank of banks" [value]="bank.id">
+            {{ bank.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="isCashReceived">
+          <mat-option [value]="null">All Statuses</mat-option>
+          <mat-option [value]="true">Received</mat-option>
+          <mat-option [value]="false">Not Received</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-row">
+      <mat-form-field appearance="outline">
+        <mat-label>From Date</mat-label>
+        <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate">
+        <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #fromDatePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>To Date</mat-label>
+        <input matInput [matDatepicker]="toDatePicker" formControlName="toDate">
+        <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+        <mat-datepicker #toDatePicker></mat-datepicker>
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button mat-raised-button color="primary" type="submit">
+          <mat-icon>search</mat-icon> Apply
+        </button>
+        <button mat-button type="button" (click)="resetFilter()">
+          <mat-icon>clear</mat-icon> Reset
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

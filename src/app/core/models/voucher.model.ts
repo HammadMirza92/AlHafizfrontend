@@ -6,7 +6,7 @@ export interface Voucher {
   voucherType: VoucherType;
   customerId?: number;
   customerName?: string;
-  paymentType: PaymentType;
+  paymentType: string;
   bankId?: number;
   bankName?: string;
   paymentDetails?: string;

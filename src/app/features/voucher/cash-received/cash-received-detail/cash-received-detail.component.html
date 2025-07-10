@@ -1,0 +1,82 @@
+<div class="cash-received-detail-container">
+  <div class="header">
+    <h1>Cash Received Voucher Detail</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" [routerLink]="['../edit', transaction?.id]">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+      <button mat-raised-button color="primary" routerLink="/vouchers/cash-received">
+        <mat-icon>list</mat-icon>
+        All Cash Received Vouchers
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner [diameter]="50"></mat-spinner>
+    <p>Loading Cash Received Voucher details...</p>
+  </div>
+
+  <mat-card *ngIf="transaction && !loading">
+    <mat-card-content>
+      <div class="detail-section">
+        <h2>Basic Information</h2>
+
+        <div class="detail-row">
+          <div class="detail-label">ID:</div>
+          <div class="detail-value">{{ transaction.id }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Date:</div>
+          <div class="detail-value">{{ transaction.createdAt | date: 'medium' }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="transaction.customerName">
+          <div class="detail-label">Customer:</div>
+          <div class="detail-value">{{ transaction.customerName }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Payment Type:</div>
+          <div class="detail-value">{{ getPaymentTypeText(transaction.paymentType) }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="transaction.bankName">
+          <div class="detail-label">Bank:</div>
+          <div class="detail-value">{{ transaction.bankName }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="transaction.paymentDetails">
+          <div class="detail-label">Payment Details:</div>
+          <div class="detail-value">{{ transaction.paymentDetails }}</div>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-label">Amount:</div>
+          <div class="detail-value">{{ transaction.amount | currency:'PKR':'symbol':'1.2-2' }}</div>
+        </div>
+
+        <div class="detail-row" *ngIf="transaction.details">
+          <div class="detail-label">Details:</div>
+          <div class="detail-value">{{ transaction.details }}</div>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-button routerLink="/vouchers/cash-received">Back</button>
+      <button mat-raised-button color="primary" (click)="printTransaction()">
+        <mat-icon>print</mat-icon>
+        Print
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <div *ngIf="!transaction && !loading" class="not-found">
+    <h2>Transaction not found</h2>
+    <p>The Cash Received Voucher you are looking for does not exist or has been deleted.</p>
+    <button mat-raised-button color="primary" routerLink="/vouchers/cash-received">Go Back</button>
+  </div>
+</div>

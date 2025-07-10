@@ -1,0 +1,22 @@
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: center;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  mat-checkbox {
+    margin-bottom: 16px;
+  }
+}
+
+mat-dialog-content {
+  padding: 16px 0;
+}
+
+mat-dialog-actions {
+  padding: 16px 0;
+}

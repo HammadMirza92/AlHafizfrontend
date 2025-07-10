@@ -1,3 +1,4 @@
+import { SetRatesModule } from './features/set-rates/set-rate.module';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
@@ -38,6 +39,14 @@ const routes: Routes = [
       {
         path: 'reports',
         loadChildren: () => import('./features/report/report.module').then(m => m.ReportModule)
+      },
+      {
+        path: 'payment-records',
+        loadChildren: () => import('./features/payment-record/payment-record.module').then(m => m.paymentRecordModule)
+      },
+      {
+        path: 'setRates',
+        loadChildren: () => import('./features/set-rates/set-rate.module').then(m => m.SetRatesModule)
       }
     ]
   },

@@ -1,109 +1,158 @@
-<mat-nav-list>
-  <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-    <mat-icon matListItemIcon>dashboard</mat-icon>
-    <span matListItemTitle>Dashboard</span>
-  </a>
+<mat-sidenav-container class="sidebar-container">
+  <mat-sidenav #sidenav mode="side" opened class="app-sidenav">
+    <!-- App Header -->
+    <div class="app-header">
+      <div class="app-logo">
+        <mat-icon class="logo-icon">business</mat-icon>
+        <span class="app-name">BizManager Pro</span>
+      </div>
+    </div>
 
-  <h3 matSubheader>Master Data</h3>
+    <!-- Main Navigation -->
+    <mat-nav-list class="nav-list">
+      <!-- Dashboard -->
+      <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">dashboard</mat-icon>
+        <span matListItemTitle class="nav-title">Dashboard</span>
+      </a>
 
-  <a mat-list-item routerLink="/customers" routerLinkActive="active">
-    <mat-icon matListItemIcon>people</mat-icon>
-    <span matListItemTitle>Customers</span>
-  </a>
-  <a mat-list-item routerLink="/setRates" routerLinkActive="active">
-    <mat-icon matListItemIcon>people</mat-icon>
-    <span matListItemTitle>Set Rates</span>
-  </a>
+      <!-- Master Data Section -->
+      <div class="section-header">
+        <span class="section-title">MASTER DATA</span>
+        <mat-divider></mat-divider>
+      </div>
+      <a mat-list-item routerLink="/customers" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">people</mat-icon>
+        <span matListItemTitle class="nav-title">Customers</span>
+      </a>
+        <a mat-list-item routerLink="/setRates" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">people</mat-icon>
+        <span matListItemTitle class="nav-title">Set Rates</span>
+      </a>
+      <a mat-list-item routerLink="/items" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">category</mat-icon>
+        <span matListItemTitle class="nav-title">Items</span>
+      </a>
+      <a mat-list-item routerLink="/banks" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">account_balance</mat-icon>
+        <span matListItemTitle class="nav-title">Banks</span>
+      </a>
 
-  <a mat-list-item routerLink="/items" routerLinkActive="active">
-    <mat-icon matListItemIcon>category</mat-icon>
-    <span matListItemTitle>Items</span>
-  </a>
+      <a mat-list-item routerLink="/payment-records" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">receipt_long</mat-icon>
+        <span matListItemTitle class="nav-title">Payment Records</span>
+      </a>
 
-  <a mat-list-item routerLink="/banks" routerLinkActive="active">
-    <mat-icon matListItemIcon>account_balance</mat-icon>
-    <span matListItemTitle>Banks</span>
-  </a>
-   <a mat-list-item routerLink="/payment-records" routerLinkActive="active">
-    <mat-icon matListItemIcon>account_balance</mat-icon>
-    <span matListItemTitle>payment records</span>
-  </a>
+      <a mat-list-item routerLink="/expense-heads" routerLinkActive="active" class="nav-item">
+        <mat-icon matListItemIcon class="nav-icon">list_alt</mat-icon>
+        <span matListItemTitle class="nav-title">Expense Heads</span>
+      </a>
 
-  <a mat-list-item routerLink="/expense-heads" routerLinkActive="active">
-    <mat-icon matListItemIcon>list_alt</mat-icon>
-    <span matListItemTitle>Expense Heads</span>
-  </a>
+      <!-- Vouchers Section -->
+      <div class="section-header">
+        <span class="section-title">VOUCHERS</span>
+        <mat-divider></mat-divider>
+      </div>
 
-  <h3 matSubheader>Vouchers</h3>
+      <mat-accordion displayMode="flat" class="nav-accordion">
+        <mat-expansion-panel [class.mat-elevation-z0]="true" hideToggle>
+          <mat-expansion-panel-header class="expansion-header">
+            <mat-icon class="expansion-icon">receipt</mat-icon>
+            <span class="expansion-title">Vouchers</span>
+            <mat-icon class="expansion-arrow">keyboard_arrow_down</mat-icon>
+          </mat-expansion-panel-header>
 
-  <mat-expansion-panel [class.mat-elevation-z0]="true">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <mat-icon>receipt</mat-icon>
-        <span style="margin-left: 16px;">Vouchers</span>
-      </mat-panel-title>
-    </mat-expansion-panel-header>
+          <a mat-list-item routerLink="/vouchers/purchase" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">add_shopping_cart</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Purchase</span>
+          </a>
 
-    <a mat-list-item routerLink="/vouchers/purchase" routerLinkActive="active">
-      <mat-icon matListItemIcon>add_shopping_cart</mat-icon>
-      <span matListItemTitle>Purchase</span>
-    </a>
+          <a mat-list-item routerLink="/vouchers/sale" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">shopping_cart</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Sale</span>
+          </a>
 
-    <a mat-list-item routerLink="/vouchers/sale" routerLinkActive="active">
-      <mat-icon matListItemIcon>shopping_cart</mat-icon>
-      <span matListItemTitle>Sale</span>
-    </a>
+          <a mat-list-item routerLink="/vouchers/expense" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">money_off</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Expense</span>
+          </a>
 
-    <a mat-list-item routerLink="/vouchers/expense" routerLinkActive="active">
-      <mat-icon matListItemIcon>money_off</mat-icon>
-      <span matListItemTitle>Expense</span>
-    </a>
+          <a mat-list-item routerLink="/vouchers/hazri" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">assignment_ind</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Hazri</span>
+          </a>
+          <a mat-list-item routerLink="/vouchers/cash-paid" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">payments</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Cash Paid</span>
+          </a>
+          <a mat-list-item routerLink="/vouchers/cash-received" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">attach_money</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Cash Received</span>
+          </a>
+        </mat-expansion-panel>
+      </mat-accordion>
 
-    <a mat-list-item routerLink="/vouchers/hazri" routerLinkActive="active">
-      <mat-icon matListItemIcon>assignment_ind</mat-icon>
-      <span matListItemTitle>Hazri</span>
-    </a>
+      <!-- Reports Section -->
+      <div class="section-header">
+        <span class="section-title">REPORTS</span>
+        <mat-divider></mat-divider>
+      </div>
 
-    <a mat-list-item routerLink="/vouchers/cash-paid" routerLinkActive="active">
-      <mat-icon matListItemIcon>payments</mat-icon>
-      <span matListItemTitle>Cash Paid</span>
-    </a>
+      <mat-accordion displayMode="flat" class="nav-accordion">
+        <mat-expansion-panel [class.mat-elevation-z0]="true" hideToggle>
+          <mat-expansion-panel-header class="expansion-header">
+            <mat-icon class="expansion-icon">summarize</mat-icon>
+            <span class="expansion-title">Reports</span>
+            <mat-icon class="expansion-arrow">keyboard_arrow_down</mat-icon>
+          </mat-expansion-panel-header>
 
-    <a mat-list-item routerLink="/vouchers/cash-received" routerLinkActive="active">
-      <mat-icon matListItemIcon>attach_money</mat-icon>
-      <span matListItemTitle>Cash Received</span>
-    </a>
-  </mat-expansion-panel>
+          <a mat-list-item routerLink="/stock" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">inventory</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Stock</span>
+          </a>
 
-  <h3 matSubheader>Reports</h3>
+          <a mat-list-item routerLink="/reports/purchase" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">summarize</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Purchase Report</span>
+          </a>
 
-  <a mat-list-item routerLink="/stock" routerLinkActive="active">
-    <mat-icon matListItemIcon>inventory</mat-icon>
-    <span matListItemTitle>Stock</span>
-  </a>
+          <a mat-list-item routerLink="/reports/sale" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">summarize</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Sale Report</span>
+          </a>
 
-  <a mat-list-item routerLink="/reports/purchase" routerLinkActive="active">
-    <mat-icon matListItemIcon>receipt_long</mat-icon>
-    <span matListItemTitle>Purchase Report</span>
-  </a>
+          <a mat-list-item routerLink="/reports/expense" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">summarize</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Expense Report</span>
+          </a>
 
-  <a mat-list-item routerLink="/reports/sale" routerLinkActive="active">
-    <mat-icon matListItemIcon>receipt_long</mat-icon>
-    <span matListItemTitle>Sale Report</span>
-  </a>
+          <a mat-list-item routerLink="/reports/hazri" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">summarize</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Hazri Report</span>
+          </a>
+          <a mat-list-item routerLink="/reports/cash" routerLinkActive="active" class="sub-nav-item">
+            <mat-icon matListItemIcon class="sub-nav-icon">receipt_long</mat-icon>
+            <span matListItemTitle class="sub-nav-title">Cash Report</span>
+          </a>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </mat-nav-list>
 
-  <a mat-list-item routerLink="/reports/expense" routerLinkActive="active">
-    <mat-icon matListItemIcon>receipt_long</mat-icon>
-    <span matListItemTitle>Expense Report</span>
-  </a>
-
-  <a mat-list-item routerLink="/reports/hazri" routerLinkActive="active">
-    <mat-icon matListItemIcon>receipt_long</mat-icon>
-    <span matListItemTitle>Hazri Report</span>
-  </a>
-
-  <a mat-list-item routerLink="/reports/cash" routerLinkActive="active">
-    <mat-icon matListItemIcon>receipt_long</mat-icon>
-    <span matListItemTitle>Cash Report</span>
-  </a>
-</mat-nav-list>
+    <!-- User Profile Footer -->
+    <div class="user-profile">
+      <mat-divider></mat-divider>
+      <div class="profile-content">
+        <div class="avatar">
+          <mat-icon>account_circle</mat-icon>
+        </div>
+        <div class="profile-info">
+          <span class="username">Admin User</span>
+          <span class="role">Bilal</span>
+        </div>
+        <button mat-icon-button class="settings-btn">
+          <mat-icon>settings</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-sidenav>
+</mat-sidenav-container>

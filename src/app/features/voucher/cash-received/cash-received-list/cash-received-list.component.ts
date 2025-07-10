@@ -59,6 +59,7 @@ export class CashReceivedListComponent implements OnInit {
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    debugger;
   }
 
   loadDependentData(): void {
@@ -102,6 +103,7 @@ export class CashReceivedListComponent implements OnInit {
 
     this.cashTransactionService.filterCashTransactions(filter).subscribe({
       next: (transactions) => {
+        debugger;
         this.dataSource.data = transactions;
         if (this.dataSource.paginator) {
           this.dataSource.paginator.firstPage();
@@ -117,13 +119,13 @@ export class CashReceivedListComponent implements OnInit {
     });
   }
 
-  getPaymentTypeText(paymentType: PaymentType): string {
+  getPaymentTypeText(paymentType: string): string {
     switch (paymentType) {
-      case PaymentType.Cash:
+      case 'Cash':
         return 'Cash';
-      case PaymentType.Bank:
+      case 'Bank':
         return 'Bank';
-      case PaymentType.Credit:
+      case 'Credit':
         return 'Credit';
       default:
         return '';

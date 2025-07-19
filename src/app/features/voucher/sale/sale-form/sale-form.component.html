@@ -1,36 +1,51 @@
-<!-- sale-form.component.html -->
 <div class="purchase-form-container">
   <!-- Header Section -->
   <div class="header">
     <div class="header-left">
       <h1>{{ isEditMode ? 'Edit' : 'New' }} Sale Voucher</h1>
-      <p class="header-subtitle">Manage sale transactions</p>
+      <div class="header-subtitle" *ngIf="!loading">
+        {{ isEditMode ? 'Update existing voucher details' : 'Create a new sale voucher' }}
+      </div>
     </div>
     <div class="header-actions">
-      <button mat-raised-button color="primary" routerLink="/vouchers/sale">
-        <mat-icon>list</mat-icon>
-        All Sale Vouchers
+      <button mat-stroked-button (click)="goBack()" [disabled]="submitting">
+        <mat-icon>arrow_back</mat-icon>
+        Back to List
       </button>
     </div>
   </div>
 
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-card class="loading-card">
+      <mat-card-content>
+        <div class="loading-content">
+          <mat-spinner [diameter]="50"></mat-spinner>
+          <h3>Loading Form Data...</h3>
+          <p>Please wait while we prepare the form.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
   <!-- Form Content -->
-  <div class="form-content">
+  <div class="form-content" *ngIf="!loading">
     <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
 
-      <!-- Info Card -->
+      <!-- Basic Information Card -->
       <mat-card class="info-card">
         <mat-card-header>
           <mat-card-title>
             <mat-icon>info</mat-icon>
-            Sale Information
+            Basic Information
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <div class="form-grid">
             <mat-form-field appearance="outline" class="required-field">
               <mat-label>Customer</mat-label>
-              <mat-select formControlName="customerId" required>
+              <mat-select formControlName="customerId" required (selectionChange)="onCustomerChange()">
+                <mat-option value="">Select Customer</mat-option>
                 <mat-option *ngFor="let customer of customers" [value]="customer.id">
                   {{ customer.name }}
                 </mat-option>
@@ -43,170 +58,343 @@
             <mat-form-field appearance="outline" class="required-field">
               <mat-label>Payment Type</mat-label>
               <mat-select formControlName="paymentType" required>
-                <mat-option [value]="paymentTypes.Cash">Cash</mat-option>
-                <mat-option [value]="paymentTypes.Bank">Bank</mat-option>
-                <mat-option [value]="paymentTypes.Credit">Credit</mat-option>
+                <!-- Custom display template for the selected value (without icon) -->
+                <mat-select-trigger>
+                  {{ getSelectedPaymentType() }}
+                </mat-select-trigger>
+
+                <!-- Dropdown options with icon and text -->
+                <mat-option [value]="paymentTypes.Cash">
+                  <div class="payment-option cash">
+                    <mat-icon>payments</mat-icon>
+                    Cash
+                  </div>
+                </mat-option>
+                <mat-option [value]="paymentTypes.Bank">
+                  <div class="payment-option bank">
+                    <mat-icon>account_balance</mat-icon>
+                    Bank
+                  </div>
+                </mat-option>
+                <mat-option [value]="paymentTypes.Credit">
+                  <div class="payment-option credit">
+                    <mat-icon>credit_card</mat-icon>
+                    Credit
+                  </div>
+                </mat-option>
               </mat-select>
+
               <mat-error *ngIf="saleForm.get('paymentType')?.hasError('required')">
                 Payment type is required
               </mat-error>
             </mat-form-field>
 
-            <mat-form-field appearance="outline" *ngIf="saleForm.get('paymentType')?.value === paymentTypes.Bank" class="required-field">
+            <mat-form-field appearance="outline"
+                            class="required-field"
+                            *ngIf="saleForm.get('paymentType')?.value === paymentTypes.Bank">
               <mat-label>Bank</mat-label>
               <mat-select formControlName="bankId" required>
+                <mat-option value="">Select Bank</mat-option>
                 <mat-option *ngFor="let bank of banks" [value]="bank.id">
-                  {{ bank.name }}
+                  <div class="bank-option">
+                    <mat-icon class="bank-icon">account_balance</mat-icon>
+                    {{ bank.name }}
+                  </div>
                 </mat-option>
               </mat-select>
               <mat-error *ngIf="saleForm.get('bankId')?.hasError('required')">
-                Bank is required
+                Bank is required for bank payments
               </mat-error>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
               <mat-label>Payment Details</mat-label>
-              <input matInput formControlName="paymentDetails">
+              <input matInput formControlName="paymentDetails" placeholder="Enter payment details">
+              <mat-icon matSuffix>description</mat-icon>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Gari No</mat-label>
-              <input matInput formControlName="gariNo">
+              <mat-label>Gari Number</mat-label>
+              <input matInput formControlName="gariNo" placeholder="Enter vehicle number">
+              <mat-icon matSuffix>local_shipping</mat-icon>
             </mat-form-field>
+          </div>
+          <div formArrayName="voucherItems">
+            <div class="items-container">
+
+              <!-- Add Item Button -->
+              <!-- <div class="add-item-section">
+                <button mat-raised-button color="primary" type="button" (click)="addItem()" [disabled]="submitting">
+                  <mat-icon>add</mat-icon>
+                  Add New Item
+                </button>
+              </div> -->
+
+              <!-- Items List -->
+              <div class="items-list" *ngIf="voucherItemsFormArray.length > 0">
+                <div *ngFor="let itemControl of voucherItemsFormArray.controls; let i = index"
+                     [formGroupName]="i"
+                     class="item-card">
+
+                  <div class="item-header">
+                    <!-- <div class="item-number">
+                      <mat-icon>inventory_2</mat-icon>
+                      Item #{{ i + 1 }}
+                    </div> -->
+                    <!-- <button mat-icon-button
+                            color="warn"
+                            type="button"
+                            (click)="removeItem(i)"
+                            [disabled]="voucherItemsFormArray.length === 1 || submitting"
+                            matTooltip="Remove Item">
+                      <mat-icon>delete</mat-icon>
+                    </button> -->
+                  </div>
+
+                  <div class="item-content">
+                    <div class="item-form-grid">
+                      <!-- Item Selection -->
+                      <mat-form-field appearance="outline" class="required-field item-select">
+                        <mat-label>Select Item</mat-label>
+                        <mat-select formControlName="itemId" required (selectionChange)="onItemSelected(i)">
+                          <mat-option value="">Choose an item</mat-option>
+                          <mat-option *ngFor="let stockItem of stockItems" [value]="stockItem.itemId">
+                            {{ stockItem.itemName }} ({{ stockItem.quantity }}kg available)
+                          </mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="itemControl.get('itemId')?.hasError('required')">
+                          Item is required
+                        </mat-error>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Man</mat-label>
+                        <input matInput
+                               type="number"
+                               step="1"
+                               formControlName="man"
+                               (input)="calculateWeightFromMan(i)"
+                               placeholder="0">
+                        <mat-icon matSuffix>balance</mat-icon>
+                        <mat-hint>Man (1 Man = 40 kg)</mat-hint>
+                      </mat-form-field>
+
+                      <!-- Weight -->
+                      <mat-form-field appearance="outline" class="required-field">
+                        <mat-label>Weight (kg)</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.01"
+                               formControlName="weight"
+                               (input)="calculateNetWeight(i)"
+                               required
+                               placeholder="0.00">
+                        <mat-icon matSuffix>scale</mat-icon>
+                        <mat-error *ngIf="itemControl.get('weight')?.hasError('required')">
+                          Weight is required
+                        </mat-error>
+                        <mat-error *ngIf="itemControl.get('weight')?.hasError('min')">
+                          Weight must be greater than 0
+                        </mat-error>
+                        <mat-error *ngIf="itemControl.get('weight')?.hasError('max')">
+                          Weight exceeds available stock
+                        </mat-error>
+                      </mat-form-field>
+
+                      <!-- Kat -->
+                      <mat-form-field appearance="outline" class="required-field">
+                        <mat-label>Kat (kg)</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.01"
+                               formControlName="kat"
+                               (input)="calculateNetWeight(i)"
+                               required
+                               placeholder="0.00">
+                        <mat-icon matSuffix>remove</mat-icon>
+                        <mat-error *ngIf="itemControl.get('kat')?.hasError('required')">
+                          Kat is required
+                        </mat-error>
+                      </mat-form-field>
+
+                      <!-- Formula Field -->
+                      <mat-form-field appearance="outline">
+                        <mat-label>Formula</mat-label>
+                        <input matInput
+                              formControlName="formula"
+                              (input)="calculateFromFormula(i)"
+                              [placeholder]="itemControl.get('useFormula')?.value ? '(weight - kat) / 37.324' : 'Formula disabled'"
+                              [disabled]="!itemControl.get('useFormula')?.value">
+                        <div matSuffix class="formula-toggle">
+                          <mat-checkbox
+                            formControlName="useFormula"
+                            (change)="onFormulaCheckboxChange(i)">
+                          </mat-checkbox>
+                        </div>
+                        <mat-hint>Enable checkbox to use formula calculation</mat-hint>
+                      </mat-form-field>
+
+                      <!-- Net Weight field -->
+                      <mat-form-field appearance="outline" class="calculated-field">
+                        <mat-label>Net Weight (kg)</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.01"
+                               formControlName="netWeight"
+                               placeholder="0.00">
+                        <mat-icon matSuffix class="calculated-icon">calculate</mat-icon>
+                        <mat-hint *ngIf="itemControl.get('formula')?.value">Calculated from formula</mat-hint>
+                      </mat-form-field>
+
+                      <!-- Desi Man (hidden) -->
+                      <mat-form-field appearance="outline" class="required-field" style="display: none;">
+                        <mat-label>Desi Man</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.001"
+                               formControlName="desiMan"
+                               required
+                               placeholder="0.000">
+                      </mat-form-field>
+
+                      <!-- Rate -->
+                      <mat-form-field appearance="outline" class="required-field">
+                        <mat-label>Rate</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.01"
+                               formControlName="rate"
+                               (input)="calculateAmount(i)"
+                               required
+                               placeholder="0.00">
+                        <mat-icon matSuffix>trending_up</mat-icon>
+                        <mat-error *ngIf="itemControl.get('rate')?.hasError('required')">
+                          Rate is required
+                        </mat-error>
+                        <mat-error *ngIf="itemControl.get('rate')?.hasError('min')">
+                          Rate must be greater than 0
+                        </mat-error>
+                      </mat-form-field>
+
+                      <!-- Amount (Read-only) -->
+                      <mat-form-field appearance="outline" class="calculated-field amount-field">
+                        <mat-label>Amount</mat-label>
+                        <input matInput
+                               type="number"
+                               step="0.01"
+                               formControlName="amount"
+                               placeholder="0.00">
+                        <mat-icon matSuffix class="calculated-icon" style="font-size: 24px;">₨</mat-icon>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Items Message -->
+              <div class="no-items" *ngIf="voucherItemsFormArray.length === 0">
+                <mat-icon>inventory_2</mat-icon>
+                <h3>No Items Added</h3>
+                <p>Click "Add New Item" to start adding items to this voucher.</p>
+              </div>
+
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Items Card -->
+      <!-- Items Section -->
       <mat-card class="items-card">
         <mat-card-header>
           <mat-card-title>
-            <mat-icon>inventory</mat-icon>
-            Sale Items
+            <mat-icon>inventory_2</mat-icon>
+            Items ({{ voucherItemsFormArray.length }})
           </mat-card-title>
-          <div class="items-summary">
+          <div class="items-summary" *ngIf="voucherItemsFormArray.length > 0">
             <div class="summary-item">
-              <div class="summary-label">Items</div>
-              <div class="summary-value">{{ voucherItemsFormArray.length }}</div>
+              <span class="summary-label">Total Weight:</span>
+              <span class="summary-value">{{ getTotalWeight() | number:'1.2-2' }} kg</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Net Weight:</span>
+              <span class="summary-value">{{ getTotalNetWeight() | number:'1.2-2' }} kg</span>
             </div>
             <div class="summary-item total-amount">
-              <div class="summary-label">Total</div>
-              <div class="summary-value">{{ getTotalAmount() | currency }}</div>
+              <span class="summary-label">Total Amount:</span>
+              <span class="summary-value">{{ getTotalAmount() | number:'1.2-2'}}</span>
             </div>
           </div>
         </mat-card-header>
         <mat-card-content>
-          <div class="items-container">
-            <div class="add-item-section">
-              <button mat-raised-button color="primary" type="button" (click)="addItem()">
-                <mat-icon>add</mat-icon>
-                Add Item
-              </button>
-            </div>
-
-            <div formArrayName="voucherItems" class="items-list" *ngIf="voucherItemsFormArray.length > 0">
-              <div class="item-card" *ngFor="let itemControl of voucherItemsFormArray.controls; let i = index" [formGroupName]="i">
-                <div class="item-header">
-                  <div class="item-number">
-                    <mat-icon>inventory_2</mat-icon>
-                    Item #{{ i + 1 }}
-                  </div>
-                  <button mat-icon-button color="warn" type="button" (click)="removeItem(i)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-
-                <div class="item-content">
-                  <div class="item-form-grid">
-                    <mat-form-field appearance="outline" class="item-select required-field">
-                      <mat-label>Item</mat-label>
-                      <mat-select formControlName="itemId" required (selectionChange)="onItemSelected(i)">
-                        <mat-option *ngFor="let stockItem of stockItems" [value]="stockItem.itemId">
-                          {{ stockItem.itemName }} ({{ stockItem.quantity }}kg available)
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="required-field">
-                      <mat-label>Weight (kg)</mat-label>
-                      <input matInput type="number" step="0.01" formControlName="weight" (input)="calculateNetWeight(i)" required>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="required-field">
-                      <mat-label>Kat (kg)</mat-label>
-                      <input matInput type="number" step="0.01" formControlName="kat" (input)="calculateNetWeight(i)" required>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="calculated-field">
-                      <mat-label>Net Weight (kg)</mat-label>
-                      <input matInput type="number" step="0.01" formControlName="netWeight" readonly>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="required-field">
-                      <mat-label>Desi Man</mat-label>
-                      <input matInput type="number" step="0.001" formControlName="desiMan" (input)="calculateAmount(i)" required>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="required-field">
-                      <mat-label>Rate</mat-label>
-                      <input matInput type="number" step="0.01" formControlName="rate" (input)="calculateAmount(i)" required>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline" class="calculated-field amount-field">
-                      <mat-label>Amount</mat-label>
-                      <input matInput type="number" step="0.01" formControlName="amount" readonly>
-                    </mat-form-field>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="no-items" *ngIf="voucherItemsFormArray.length === 0">
-              <mat-icon>inventory_2</mat-icon>
-              <h3>No items added yet</h3>
-              <p>Click "Add Item" to start building your sale order</p>
-            </div>
+          <div class="add-item-section">
+            <button mat-raised-button color="primary" type="button" (click)="addItem()" [disabled]="submitting">
+              <mat-icon>add</mat-icon>
+              Add New Item
+            </button>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Details Card -->
+      <!-- Additional Details Card -->
       <mat-card class="details-card">
         <mat-card-header>
           <mat-card-title>
-            <mat-icon>description</mat-icon>
+            <mat-icon>notes</mat-icon>
             Additional Details
           </mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Details</mat-label>
-            <textarea matInput formControlName="details" rows="3"></textarea>
+            <mat-label>Additional Notes</mat-label>
+            <textarea matInput
+                      formControlName="details"
+                      rows="4"
+                      placeholder="Enter any additional details or notes..."></textarea>
+            <mat-icon matSuffix>description</mat-icon>
           </mat-form-field>
         </mat-card-content>
       </mat-card>
 
-      <!-- Action Section -->
+      <!-- Action Buttons -->
       <div class="action-section">
         <mat-card class="action-card">
           <mat-card-content>
             <div class="action-content">
               <div class="action-summary">
                 <div class="summary-info">
+                  <div class="summary-row" *ngIf="getSelectedCustomerName()">
+                    <span class="label">Customer:</span>
+                    <span class="value">{{ getSelectedCustomerName() }}</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="label">Items:</span>
+                    <span class="value">{{ voucherItemsFormArray.length }}</span>
+                  </div>
                   <div class="summary-row total">
                     <span class="label">Total Amount:</span>
-                    <span class="value">{{ getTotalAmount() | currency }}</span>
+                    <span class="value">{{ getTotalAmount() | number:'1.2-2' }}</span>
                   </div>
                 </div>
               </div>
+
               <div class="action-buttons">
-                <button mat-button class="cancel-btn" type="button" routerLink="/vouchers/sale">
-                  <mat-icon>cancel</mat-icon>
+                <button mat-button
+                        type="button"
+                        (click)="goBack()"
+                        [disabled]="submitting"
+                        class="cancel-btn">
+                  <mat-icon>close</mat-icon>
                   Cancel
                 </button>
-                <button mat-raised-button color="primary" class="submit-btn" type="submit" [disabled]="saleForm.invalid || voucherItemsFormArray.length === 0">
-                  <mat-icon>save</mat-icon>
-                  {{ isEditMode ? 'Update' : 'Save' }} Sale Voucher
+
+                <button mat-raised-button
+                        color="primary"
+                        type="submit"
+                        [disabled]="!isFormValid() || submitting"
+                        class="submit-btn">
+                  <mat-icon>{{ submitting ? 'hourglass_empty' : 'save' }}</mat-icon>
+                  <span *ngIf="!submitting">{{ isEditMode ? 'Update' : 'Create' }} Voucher</span>
+                  <span *ngIf="submitting">{{ isEditMode ? 'Updating...' : 'Creating...' }}</span>
                 </button>
               </div>
             </div>

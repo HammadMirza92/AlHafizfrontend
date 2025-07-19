@@ -175,7 +175,7 @@
                               (input)="calculateWeightFromMan(i)"
                               placeholder="0">
                         <mat-icon matSuffix>balance</mat-icon>
-                        <mat-hint>Enter value in Man (1 Man = 40 kg)</mat-hint>
+                        <mat-hint>Man (1 Man = 40 kg)</mat-hint>
                       </mat-form-field>
                       <!-- Weight -->
                       <mat-form-field appearance="outline" class="required-field">
@@ -211,16 +211,29 @@
                           Kat is required
                         </mat-error>
                       </mat-form-field>
+                      <!-- <div class="formula-checkbox-container">
+                        <mat-checkbox
+                          formControlName="useFormula"
+                          (change)="onFormulaCheckboxChange(i)">
+                          Use Formula for Net Weight
+                        </mat-checkbox>
+                      </div> -->
 
-                     <!-- Add this right after the Kat field and before the Net Weight field -->
-                     <mat-form-field appearance="outline">
+                      <!-- Formula Field -->
+                      <mat-form-field appearance="outline">
                         <mat-label>Formula</mat-label>
                         <input matInput
                               formControlName="formula"
                               (input)="calculateFromFormula(i)"
-                              placeholder="Auto-calculated as 'weight - kat / 37.324'">
-                        <mat-icon matSuffix>functions</mat-icon>
-                        <mat-hint>Default: (weight - kat) / 37.324. You can edit this.</mat-hint>
+                              [placeholder]="itemControl.get('useFormula')?.value ? '(weight - kat) / 37.324' : 'Formula disabled'"
+                              [disabled]="!itemControl.get('useFormula')?.value">
+                        <div matSuffix class="formula-toggle">
+                          <mat-checkbox
+                            formControlName="useFormula"
+                            (change)="onFormulaCheckboxChange(i)">
+                          </mat-checkbox>
+                        </div>
+                        <mat-hint>Enable checkbox to use formula calculation</mat-hint>
                       </mat-form-field>
 
                       <!-- Update the Net Weight field to show it's calculated from the formula -->

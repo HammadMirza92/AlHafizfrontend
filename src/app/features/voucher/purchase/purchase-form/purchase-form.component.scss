@@ -668,26 +668,38 @@
     transform: translateY(0);
   }
 }
+.formula-field {
+  .formula-field-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
 
-.item-card {
-  animation: itemSlideIn 0.3s ease-out;
+    .formula-checkbox {
+      margin-right: 12px;
+      white-space: nowrap;
+    }
+
+    input {
+      flex: 1;
+    }
+  }
+
+  /* Custom styling to align the checkbox with the input */
+
+  /* When formula is disabled */
+  input:disabled {
+    color: rgba(0, 0, 0, 0.38);
+  }
 }
 
-// Custom scrollbar
-.items-container::-webkit-scrollbar {
-  width: 6px;
-}
+/* Additional grid adjustments to ensure all fields align properly */
+.item-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 
-.items-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.items-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-
-  &:hover {
-    background: #a1a1a1;
+  /* Make sure formula field takes up the full width of its grid cell */
+  .formula-field {
+    width: 100%;
   }
 }

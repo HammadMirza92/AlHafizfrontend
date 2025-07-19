@@ -176,6 +176,7 @@ createVoucherItemFormGroup(item: any = null): FormGroup {
   const formGroup = this.formBuilder.group({
     id: [item?.id || 0],
     man: [0], // Add new 'man' field for frontend calculation only
+    useFormula: [item?.formula ? true : false], // Checkbox to control formula usage
     itemId: [item?.itemId || null, Validators.required],
     weight: [item?.weight || 0, [Validators.required, Validators.min(0.01)]],
     kat: [item?.kat || 0, [Validators.required, Validators.min(0)]],
@@ -209,6 +210,32 @@ calculateWeightFromMan(index: number): void {
 
   // Recalculate net weight since weight has changed
   this.calculateNetWeight(index);
+}
+onFormulaCheckboxChange(index: number): void {
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const useFormula = itemGroup.get('useFormula')?.value;
+
+  if (useFormula) {
+    // Formula is now enabled - initialize it with default value if empty
+    const weight = itemGroup.get('weight')?.value || 0;
+    const kat = itemGroup.get('kat')?.value || 0;
+    const rawNet = Math.max(0, weight - kat);
+    const currentFormula = itemGroup.get('formula')?.value?.trim() || '';
+
+    if (!currentFormula) {
+      itemGroup.get('formula')?.setValue(`${rawNet} / 37.324`);
+    }
+
+    // Calculate using formula
+    this.calculateFromFormula(index);
+  } else {
+    // Formula is now disabled - calculate using simple weight-kat
+    const weight = itemGroup.get('weight')?.value || 0;
+    const kat = itemGroup.get('kat')?.value || 0;
+    const netWeight = Math.max(0, weight - kat);
+    itemGroup.get('netWeight')?.setValue(netWeight);
+    this.calculateAmount(index);
+  }
 }
   loadDependentData(): void {
     this.loading = true;
@@ -298,7 +325,6 @@ calculateWeightFromMan(index: number): void {
     }
   }
 calculateNetWeight(index: number): void {
-
   const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
   const weight = itemGroup.get('weight')?.value || 0;
   const kat = itemGroup.get('kat')?.value || 0;
@@ -313,6 +339,9 @@ calculateNetWeight(index: number): void {
   const isManualFormula = currentFormula && !/^\d+(\.\d+)?\s*\/\s*37\.324$/.test(currentFormula);
 
   if (!isManualFormula) {
+    // Set the useFormula checkbox to true since we're using the formula
+    itemGroup.get('useFormula')?.setValue(true);
+
     formulaControl?.setValue(newAutoFormula);
     const result = Math.round((rawNet / 37.324) * 100) / 100;
     itemGroup.get('netWeight')?.setValue(result);
@@ -320,17 +349,8 @@ calculateNetWeight(index: number): void {
     this.calculateFromFormula(index);
   }
 
-  // if (isAutoFormula) {
-  //   itemGroup.get('formula')?.setValue(autoFormula);
-  //   const result = Math.round((rawNet / 37.324) * 100) / 100;
-  //   itemGroup.get('netWeight')?.setValue(result);
-  // } else {
-  //   this.calculateFromFormula(index);
-  // }
-
   this.calculateAmount(index);
 }
-
 
  calculateAmount(index: number): void {
     const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
@@ -385,53 +405,57 @@ calculateNetWeight(index: number): void {
     return this.purchaseForm.valid && this.voucherItemsFormArray.length > 0;
   }
 
-  onSubmit(): void {
-    if (!this.isFormValid()) {
-      this.purchaseForm.markAllAsTouched();
-      this.markFormArrayAsTouched();
-      this.showError('Please fill in all required fields');
-      return;
-    }
-
-    this.submitting = true;
-    const formValue = this.purchaseForm.getRawValue();
-
-    const voucherData = {
-      voucherType: VoucherType.Purchase,
-      customerId: formValue.customerId,
-      paymentType: formValue.paymentType,
-      bankId: formValue.paymentType === PaymentType.Bank ? formValue.bankId : null,
-      paymentDetails: formValue.paymentDetails,
-      gariNo: formValue.gariNo,
-      details: formValue.details,
-      voucherItems: formValue.voucherItems.map((item: any) => ({
-        ...item,
-        id: this.isEditMode ? item.id : undefined
-      }))
-    };
-
-    const operation = this.isEditMode && this.voucherId
-      ? this.voucherService.updateVoucher(this.voucherId, voucherData)
-      : this.voucherService.createVoucher(voucherData);
-
-    operation.subscribe({
-      next: () => {
-        const message = this.isEditMode
-          ? 'Purchase voucher updated successfully'
-          : 'Purchase voucher created successfully';
-        this.showSuccess(message);
-        this.router.navigate(['/vouchers/purchase']);
-      },
-      error: (error) => {
-        console.error('Error saving voucher:', error);
-        const message = this.isEditMode
-          ? 'Error updating purchase voucher'
-          : 'Error creating purchase voucher';
-        this.showError(message);
-        this.submitting = false;
-      }
-    });
+ onSubmit(): void {
+  if (!this.isFormValid()) {
+    this.purchaseForm.markAllAsTouched();
+    this.markFormArrayAsTouched();
+    this.showError('Please fill in all required fields');
+    return;
   }
+
+  this.submitting = true;
+  const formValue = this.purchaseForm.getRawValue();
+
+  const voucherData = {
+    voucherType: VoucherType.Purchase,
+    customerId: formValue.customerId,
+    paymentType: formValue.paymentType,
+    bankId: formValue.paymentType === PaymentType.Bank ? formValue.bankId : null,
+    paymentDetails: formValue.paymentDetails,
+    gariNo: formValue.gariNo,
+    details: formValue.details,
+    voucherItems: formValue.voucherItems.map((item: any) => {
+      // Create a new object without the 'man' and 'useFormula' fields
+      const { man, useFormula, ...itemWithoutFrontendFields } = item;
+      return {
+        ...itemWithoutFrontendFields,
+        id: this.isEditMode ? item.id : undefined
+      };
+    })
+  };
+
+  const operation = this.isEditMode && this.voucherId
+    ? this.voucherService.updateVoucher(this.voucherId, voucherData)
+    : this.voucherService.createVoucher(voucherData);
+
+  operation.subscribe({
+    next: () => {
+      const message = this.isEditMode
+        ? 'Purchase voucher updated successfully'
+        : 'Purchase voucher created successfully';
+      this.showSuccess(message);
+      this.router.navigate(['/vouchers/purchase']);
+    },
+    error: (error) => {
+      console.error('Error saving voucher:', error);
+      const message = this.isEditMode
+        ? 'Error updating purchase voucher'
+        : 'Error creating purchase voucher';
+      this.showError(message);
+      this.submitting = false;
+    }
+  });
+}
 
   private markFormArrayAsTouched(): void {
     this.voucherItemsFormArray.controls.forEach(control => {

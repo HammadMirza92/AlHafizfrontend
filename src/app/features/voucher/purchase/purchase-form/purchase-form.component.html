@@ -119,42 +119,16 @@
               <mat-icon matSuffix>local_shipping</mat-icon>
             </mat-form-field>
           </div>
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Items Section -->
-      <mat-card class="items-card">
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>inventory_2</mat-icon>
-            Items ({{ voucherItemsFormArray.length }})
-          </mat-card-title>
-          <div class="items-summary" *ngIf="voucherItemsFormArray.length > 0">
-            <div class="summary-item">
-              <span class="summary-label">Total Weight:</span>
-              <span class="summary-value">{{ getTotalWeight() | number:'1.2-2' }} kg</span>
-            </div>
-            <div class="summary-item">
-              <span class="summary-label">Net Weight:</span>
-              <span class="summary-value">{{ getTotalNetWeight() | number:'1.2-2' }} kg</span>
-            </div>
-            <div class="summary-item total-amount">
-              <span class="summary-label">Total Amount:</span>
-              <span class="summary-value">{{ getTotalAmount() | number:'1.2-2'}}</span>
-            </div>
-          </div>
-        </mat-card-header>
-        <mat-card-content>
           <div formArrayName="voucherItems">
             <div class="items-container">
 
               <!-- Add Item Button -->
-              <div class="add-item-section">
+              <!-- <div class="add-item-section">
                 <button mat-raised-button color="primary" type="button" (click)="addItem()" [disabled]="submitting">
                   <mat-icon>add</mat-icon>
                   Add New Item
                 </button>
-              </div>
+              </div> -->
 
               <!-- Items List -->
               <div class="items-list" *ngIf="voucherItemsFormArray.length > 0">
@@ -163,18 +137,18 @@
                      class="item-card">
 
                   <div class="item-header">
-                    <div class="item-number">
+                    <!-- <div class="item-number">
                       <mat-icon>inventory_2</mat-icon>
                       Item #{{ i + 1 }}
-                    </div>
-                    <button mat-icon-button
+                    </div> -->
+                    <!-- <button mat-icon-button
                             color="warn"
                             type="button"
                             (click)="removeItem(i)"
                             [disabled]="voucherItemsFormArray.length === 1 || submitting"
                             matTooltip="Remove Item">
                       <mat-icon>delete</mat-icon>
-                    </button>
+                    </button> -->
                   </div>
 
                   <div class="item-content">
@@ -228,20 +202,31 @@
                         </mat-error>
                       </mat-form-field>
 
-                      <!-- Net Weight (Read-only) -->
+                     <!-- Add this right after the Kat field and before the Net Weight field -->
+                     <mat-form-field appearance="outline">
+                        <mat-label>Formula</mat-label>
+                        <input matInput
+                              formControlName="formula"
+                              (input)="calculateFromFormula(i)"
+                              placeholder="Auto-calculated as 'weight - kat / 37.324'">
+                        <mat-icon matSuffix>functions</mat-icon>
+                        <mat-hint>Default: (weight - kat) / 37.324. You can edit this.</mat-hint>
+                      </mat-form-field>
+
+                      <!-- Update the Net Weight field to show it's calculated from the formula -->
                       <mat-form-field appearance="outline" class="calculated-field">
                         <mat-label>Net Weight (kg)</mat-label>
                         <input matInput
-                               type="number"
-                               step="0.01"
-                               formControlName="netWeight"
-                               readonly
-                               placeholder="0.00">
+                              type="number"
+                              step="0.01"
+                              formControlName="netWeight"
+                              placeholder="0.00">
                         <mat-icon matSuffix class="calculated-icon">calculate</mat-icon>
+                        <mat-hint *ngIf="itemControl.get('formula')?.value">Calculated from formula</mat-hint>
                       </mat-form-field>
 
                       <!-- Desi Man -->
-                      <mat-form-field appearance="outline" class="required-field">
+                      <mat-form-field appearance="outline" class="required-field" style="display: none;">
                         <mat-label>Desi Man</mat-label>
                         <input matInput
                                type="number"
@@ -302,6 +287,33 @@
 
             </div>
           </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Items Section -->
+      <mat-card class="items-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>inventory_2</mat-icon>
+            Items ({{ voucherItemsFormArray.length }})
+          </mat-card-title>
+          <div class="items-summary" *ngIf="voucherItemsFormArray.length > 0">
+            <div class="summary-item">
+              <span class="summary-label">Total Weight:</span>
+              <span class="summary-value">{{ getTotalWeight() | number:'1.2-2' }} kg</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Net Weight:</span>
+              <span class="summary-value">{{ getTotalNetWeight() | number:'1.2-2' }} kg</span>
+            </div>
+            <div class="summary-item total-amount">
+              <span class="summary-label">Total Amount:</span>
+              <span class="summary-value">{{ getTotalAmount() | number:'1.2-2'}}</span>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+
         </mat-card-content>
       </mat-card>
 

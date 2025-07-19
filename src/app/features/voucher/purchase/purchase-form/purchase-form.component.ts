@@ -121,7 +121,42 @@ export class PurchaseFormComponent implements OnInit {
       this.addItem();
     }
   }
+ calculateFromFormula(index: number): void {
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const formula = itemGroup.get('formula')?.value;
 
+  if (formula && formula.trim() !== '') {
+    try {
+      // Replace common math operations with their JavaScript equivalents
+      const sanitizedFormula = formula
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/x/gi, '*');
+
+      // Use JavaScript's eval to calculate the formula result
+      // This is a simple implementation - in production, consider using a dedicated math parser library
+      const result = Math.round(eval(sanitizedFormula) * 100) / 100;
+
+      if (!isNaN(result) && isFinite(result)) {
+        itemGroup.get('netWeight')?.setValue(result);
+        // Also update amount calculation since netWeight changed
+        this.calculateAmount(index);
+      }
+    } catch (error) {
+      console.error('Error evaluating formula:', error);
+      // Keep the previous netWeight if formula evaluation fails
+    }
+  } else {
+    // If formula is empty, fall back to the weight-kat calculation
+    // But don't update the formula field here, as it might be cleared intentionally
+    debugger;
+    const weight = itemGroup.get('weight')?.value || 0;
+    const kat = itemGroup.get('kat')?.value || 0;
+    const netWeight = Math.max(0, weight - kat);
+    itemGroup.get('netWeight')?.setValue(netWeight);
+    this.calculateAmount(index);
+  }
+}
   get voucherItemsFormArray(): FormArray {
     return this.purchaseForm.get('voucherItems') as FormArray;
   }
@@ -138,18 +173,30 @@ export class PurchaseFormComponent implements OnInit {
     });
   }
 
-  createVoucherItemFormGroup(item: any = null): FormGroup {
-    return this.formBuilder.group({
-      id: [item?.id || 0],
-      itemId: [item?.itemId || null, Validators.required],
-      weight: [item?.weight || 0, [Validators.required, Validators.min(0.01)]],
-      kat: [item?.kat || 0, [Validators.required, Validators.min(0)]],
-      netWeight: [{ value: item?.netWeight || 0, disabled: true }],
-      desiMan: [item?.desiMan || 37.324, [Validators.required, Validators.min(0.01)]],
-      rate: [item?.rate || 0, [Validators.required, Validators.min(0.01)]],
-      amount: [item?.amount || 0, [Validators.required, Validators.min(0.01)]]
-    });
+createVoucherItemFormGroup(item: any = null): FormGroup {
+  const formGroup = this.formBuilder.group({
+    id: [item?.id || 0],
+    itemId: [item?.itemId || null, Validators.required],
+    weight: [item?.weight || 0, [Validators.required, Validators.min(0.01)]],
+    kat: [item?.kat || 0, [Validators.required, Validators.min(0)]],
+    formula: [item?.formula || ''],
+    netWeight: [{ value: item?.netWeight || 0 }],
+    desiMan: [item?.desiMan || 37.324, [Validators.required, Validators.min(0.01)]],
+    rate: [item?.rate || 0, [Validators.required, Validators.min(0.01)]],
+    amount: [item?.amount || 0, [Validators.required, Validators.min(0.01)]]
+  });
+
+  // Initialize formula if weight and kat already have values
+  const weight = formGroup.get('weight')?.value || 0;
+  const kat = formGroup.get('kat')?.value || 0;
+
+  if (weight > 0 && !item?.formula) {
+    const netWeightValue = Math.max(0, weight - kat);
+    formGroup.get('formula')?.setValue(`${netWeightValue} / 37.324`);
   }
+
+  return formGroup;
+}
 
   loadDependentData(): void {
     this.loading = true;
@@ -238,31 +285,54 @@ export class PurchaseFormComponent implements OnInit {
       this.showError('At least one item is required');
     }
   }
+calculateNetWeight(index: number): void {
 
-  calculateNetWeight(index: number): void {
-    const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
-    const weight = itemGroup.get('weight')?.value || 0;
-    const kat = itemGroup.get('kat')?.value || 0;
-    const netWeight = Math.max(0, weight - kat);
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const weight = itemGroup.get('weight')?.value || 0;
+  const kat = itemGroup.get('kat')?.value || 0;
+  const formula = itemGroup.get('formula')?.value;
 
-    itemGroup.get('netWeight')?.setValue(netWeight);
-    this.calculateAmount(index);
+  const formulaControl = itemGroup.get('formula');
+  const currentFormula = formulaControl?.value?.trim() || '';
+  const rawNet = Math.max(0, weight - kat);
+  const newAutoFormula = `${rawNet} / 37.324`;
+
+  // Only update formula if it's empty or matches old structure
+  const isManualFormula = currentFormula && !/^\d+(\.\d+)?\s*\/\s*37\.324$/.test(currentFormula);
+
+  if (!isManualFormula) {
+    formulaControl?.setValue(newAutoFormula);
+    const result = Math.round((rawNet / 37.324) * 100) / 100;
+    itemGroup.get('netWeight')?.setValue(result);
+  } else {
+    this.calculateFromFormula(index);
   }
 
-  calculateAmount(index: number): void {
+  // if (isAutoFormula) {
+  //   itemGroup.get('formula')?.setValue(autoFormula);
+  //   const result = Math.round((rawNet / 37.324) * 100) / 100;
+  //   itemGroup.get('netWeight')?.setValue(result);
+  // } else {
+  //   this.calculateFromFormula(index);
+  // }
+
+  this.calculateAmount(index);
+}
+
+
+ calculateAmount(index: number): void {
     const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
-    const desiMan = itemGroup.get('desiMan')?.value || 0;
+    const netWeight = itemGroup.get('netWeight')?.value || 0;
     const rate = itemGroup.get('rate')?.value || 0;
 
-    // Formula: amount = desiMan * rate
-    const amount = Math.round((desiMan * rate) * 100) / 100;
+    // New formula: amount = netWeight * rate (instead of desiMan * rate)
+    const amount = Math.round((netWeight * rate) * 100) / 100;
     itemGroup.get('amount')?.setValue(amount);
   }
 
   getTotalAmount(): number {
     let total = 0;
     for (let i = 0; i < this.voucherItemsFormArray.length; i++) {
-      debugger;
       const itemGroup = this.voucherItemsFormArray.at(i) as FormGroup;
       total += Number(itemGroup.get('amount')?.value || 0);
     }

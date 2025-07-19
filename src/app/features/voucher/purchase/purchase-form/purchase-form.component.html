@@ -166,7 +166,17 @@
                         Item is required
                       </mat-error>
                     </mat-form-field>
-
+                      <mat-form-field appearance="outline">
+                        <mat-label>Man</mat-label>
+                        <input matInput
+                              type="number"
+                              step="1"
+                              formControlName="man"
+                              (input)="calculateWeightFromMan(i)"
+                              placeholder="0">
+                        <mat-icon matSuffix>balance</mat-icon>
+                        <mat-hint>Enter value in Man (1 Man = 40 kg)</mat-hint>
+                      </mat-form-field>
                       <!-- Weight -->
                       <mat-form-field appearance="outline" class="required-field">
                         <mat-label>Weight (kg)</mat-label>

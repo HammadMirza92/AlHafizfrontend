@@ -149,7 +149,6 @@ export class PurchaseFormComponent implements OnInit {
   } else {
     // If formula is empty, fall back to the weight-kat calculation
     // But don't update the formula field here, as it might be cleared intentionally
-    debugger;
     const weight = itemGroup.get('weight')?.value || 0;
     const kat = itemGroup.get('kat')?.value || 0;
     const netWeight = Math.max(0, weight - kat);
@@ -176,6 +175,7 @@ export class PurchaseFormComponent implements OnInit {
 createVoucherItemFormGroup(item: any = null): FormGroup {
   const formGroup = this.formBuilder.group({
     id: [item?.id || 0],
+    man: [0], // Add new 'man' field for frontend calculation only
     itemId: [item?.itemId || null, Validators.required],
     weight: [item?.weight || 0, [Validators.required, Validators.min(0.01)]],
     kat: [item?.kat || 0, [Validators.required, Validators.min(0)]],
@@ -197,7 +197,19 @@ createVoucherItemFormGroup(item: any = null): FormGroup {
 
   return formGroup;
 }
+calculateWeightFromMan(index: number): void {
+  const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
+  const manValue = itemGroup.get('man')?.value || 0;
 
+  // Conversion: 1 man = 40 kg (as per requirement example where 50 man = 2000 kg)
+  const weightValue = manValue * 40;
+
+  // Update the weight field
+  itemGroup.get('weight')?.setValue(weightValue);
+
+  // Recalculate net weight since weight has changed
+  this.calculateNetWeight(index);
+}
   loadDependentData(): void {
     this.loading = true;
     forkJoin([

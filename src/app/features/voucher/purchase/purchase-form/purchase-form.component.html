@@ -54,7 +54,12 @@
                 Customer is required
               </mat-error>
             </mat-form-field>
-
+             <div class="track-stock-checkbox">
+              <mat-checkbox formControlName="isTrackStock" color="primary">
+                <span class="track-stock-label">Track Stock</span>
+                <mat-icon class="track-stock-icon" matTooltip="If unchecked, stock will not be updated in inventory">info_outline</mat-icon>
+              </mat-checkbox>
+            </div>
           <mat-form-field appearance="outline" class="required-field">
             <mat-label>Payment Type</mat-label>
             <mat-select formControlName="paymentType" required>

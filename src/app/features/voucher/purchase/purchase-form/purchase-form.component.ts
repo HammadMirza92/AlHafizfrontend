@@ -184,7 +184,8 @@ createVoucherItemFormGroup(item: any = null): FormGroup {
     netWeight: [{ value: item?.netWeight || 0 }],
     desiMan: [item?.desiMan || 37.324, [Validators.required, Validators.min(0.01)]],
     rate: [item?.rate || 0, [Validators.required, Validators.min(0.01)]],
-    amount: [item?.amount || 0, [Validators.required, Validators.min(0.01)]]
+    amount: [item?.amount || 0, [Validators.required, Validators.min(0.01)]],
+     isTrackStock: [true],
   });
 
   // Initialize formula if weight and kat already have values
@@ -424,6 +425,7 @@ calculateNetWeight(index: number): void {
     paymentDetails: formValue.paymentDetails,
     gariNo: formValue.gariNo,
     details: formValue.details,
+    isTrackStock: formValue.isTrackStock,
     voucherItems: formValue.voucherItems.map((item: any) => {
       // Create a new object without the 'man' and 'useFormula' fields
       const { man, useFormula, ...itemWithoutFrontendFields } = item;

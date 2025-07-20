@@ -162,7 +162,18 @@
               </ng-template>
             </td>
           </ng-container>
-
+         <!-- Total Weight Column -->
+          <ng-container matColumnDef="totalWeight">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              <strong>Total Weight</strong>
+            </th>
+            <td mat-cell *matCellDef="let voucher">
+              <div class="weight-info">
+                <mat-icon class="weight-icon">scale</mat-icon>
+                <span class="weight">{{ getTotalWeight(voucher) | number:'1.2-2' }} </span>
+              </div>
+            </td>
+          </ng-container>
           <!-- Total Amount Column -->
           <ng-container matColumnDef="totalAmount">
             <th mat-header-cell *matHeaderCellDef mat-sort-header class="amount-column">
@@ -176,18 +187,7 @@
             </td>
           </ng-container>
 
-          <!-- Total Weight Column -->
-          <ng-container matColumnDef="totalWeight">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>
-              <strong>Total Weight</strong>
-            </th>
-            <td mat-cell *matCellDef="let voucher">
-              <div class="weight-info">
-                <mat-icon class="weight-icon">scale</mat-icon>
-                <span class="weight">{{ getTotalWeight(voucher) | number:'1.2-2' }} kg</span>
-              </div>
-            </td>
-          </ng-container>
+
 
           <!-- Gari No Column -->
           <ng-container matColumnDef="gariNo">

@@ -14,6 +14,13 @@ import { Bank } from '../../../../core/models/bank.model';
 import { CreateVoucher, UpdateVoucher } from '../../../../core/models/voucher.model';
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { CustomerItemRateService } from 'src/app/core/services/customer-item-rate.service';
+import { DatePipe } from '@angular/common';
+
+// Interface for dropdown date options
+interface DateOption {
+  value: Date;
+  display: string;
+}
 
 @Component({
   selector: 'app-purchase-form',
@@ -21,6 +28,9 @@ import { CustomerItemRateService } from 'src/app/core/services/customer-item-rat
   styleUrls: ['./purchase-form.component.scss']
 })
 export class PurchaseFormComponent implements OnInit {
+  availableDates: DateOption[] = [];
+  readonly DATE_FORMAT = 'dd-MMM-yy';
+  todayDate: Date = new Date();
   purchaseForm: FormGroup;
   isEditMode = false;
   voucherId: number | null = null;
@@ -42,10 +52,49 @@ export class PurchaseFormComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private customerItemRateService: CustomerItemRateService,
+    private datePipe: DatePipe
 
   ) {
     this.purchaseForm = this.createForm();
   }
+generateDateOptions(): void {
+  const today = new Date();
+  const daysInPast = 180;
+  const daysInFuture = 30;
+
+  this.availableDates = [];
+
+  // Add dates from the past
+  for (let i = daysInPast; i >= 1; i--) {
+    const date = new Date();
+    date.setDate(today.getDate() - i);
+    this.availableDates.push({
+      value: date,
+      display: this.formatDate(date)
+    });
+  }
+
+  // Add today
+  this.availableDates.push({
+    value: today,
+    display: this.formatDate(today) + ' (Today)'
+  });
+
+  // Add future dates
+  for (let i = 1; i <= daysInFuture; i++) {
+    const date = new Date();
+    date.setDate(today.getDate() + i);
+    this.availableDates.push({
+      value: date,
+      display: this.formatDate(date)
+    });
+  }
+  this.purchaseForm.get('voucherDate')?.setValue(today);
+
+}
+formatDate(date: Date): string {
+  return this.datePipe.transform(date, this.DATE_FORMAT) || '';
+}
   onCustomerChange(): void {
     const customerId = this.purchaseForm.get('customerId')?.value;
     if (customerId) {
@@ -110,7 +159,7 @@ export class PurchaseFormComponent implements OnInit {
   }
   ngOnInit(): void {
     this.loadDependentData();
-
+    this.generateDateOptions();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEditMode = true;
@@ -121,6 +170,16 @@ export class PurchaseFormComponent implements OnInit {
       this.addItem();
     }
   }
+  getSelectedDateDisplay(): string {
+  const dateValue = this.purchaseForm.get('voucherDate')?.value;
+  if (!dateValue) return '';
+
+  const selectedOption = this.availableDates.find(option =>
+    option.value.getTime() === new Date(dateValue).getTime()
+  );
+
+  return selectedOption ? selectedOption.display : this.formatDate(new Date(dateValue));
+}
  calculateFromFormula(index: number): void {
   const itemGroup = this.voucherItemsFormArray.at(index) as FormGroup;
   const formula = itemGroup.get('formula')?.value;
@@ -161,6 +220,8 @@ export class PurchaseFormComponent implements OnInit {
   }
 
   createForm(): FormGroup {
+    const currentDate = new Date();
+
     return this.formBuilder.group({
       customerId: [null, Validators.required],
       paymentType: [PaymentType.Cash, Validators.required],
@@ -168,6 +229,7 @@ export class PurchaseFormComponent implements OnInit {
       paymentDetails: [''],
       gariNo: [''],
       details: [''],
+      voucherDate: [currentDate, Validators.required],
       voucherItems: this.formBuilder.array([])
     });
   }
@@ -278,6 +340,8 @@ onFormulaCheckboxChange(index: number): void {
     this.voucherService.getVoucher(id).subscribe({
       next: (voucher) => {
         if (voucher ) {
+          const voucherDate = voucher.createdAt ? new Date(voucher.createdAt) : new Date();
+
           // Update form with voucher data
           this.purchaseForm.patchValue({
             customerId: voucher.customerId,
@@ -285,7 +349,9 @@ onFormulaCheckboxChange(index: number): void {
             bankId: voucher.bankId,
             paymentDetails: voucher.paymentDetails,
             gariNo: voucher.gariNo,
-            details: voucher.details
+            details: voucher.details,
+            voucherDate: voucherDate
+
           });
 
           // Clear existing voucher items and add the loaded ones
@@ -416,7 +482,9 @@ calculateNetWeight(index: number): void {
 
   this.submitting = true;
   const formValue = this.purchaseForm.getRawValue();
-
+const voucherDate = formValue.voucherDate instanceof Date
+    ? formValue.voucherDate
+    : new Date(formValue.voucherDate);
   const voucherData = {
     voucherType: VoucherType.Purchase,
     customerId: formValue.customerId,
@@ -426,6 +494,7 @@ calculateNetWeight(index: number): void {
     gariNo: formValue.gariNo,
     details: formValue.details,
     isTrackStock: formValue.isTrackStock,
+    createdAt: voucherDate,
     voucherItems: formValue.voucherItems.map((item: any) => {
       // Create a new object without the 'man' and 'useFormula' fields
       const { man, useFormula, ...itemWithoutFrontendFields } = item;

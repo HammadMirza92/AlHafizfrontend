@@ -42,6 +42,18 @@
         </mat-card-header>
         <mat-card-content>
           <div class="form-grid">
+           <mat-form-field appearance="outline" class="required-field">
+            <mat-label>Voucher Date</mat-label>
+            <mat-select formControlName="voucherDate" required>
+              <mat-option *ngFor="let dateOption of availableDates" [value]="dateOption.value">
+                {{ dateOption.display }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>event</mat-icon>
+            <mat-error *ngIf="purchaseForm.get('voucherDate')?.hasError('required')">
+              Voucher date is required
+            </mat-error>
+          </mat-form-field>
             <mat-form-field appearance="outline" class="required-field">
               <mat-label>Customer</mat-label>
               <mat-select formControlName="customerId" required (selectionChange)="onCustomerChange()">
@@ -54,6 +66,7 @@
                 Customer is required
               </mat-error>
             </mat-form-field>
+
              <div class="track-stock-checkbox">
               <mat-checkbox formControlName="isTrackStock" color="primary">
                 <span class="track-stock-label">Track Stock</span>

@@ -1,6 +1,6 @@
 // src/app/features/voucher/voucher.module.ts
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
@@ -33,6 +33,8 @@ import { CashPaidDetailComponent } from './cash-paid/cash-paid-detail/cash-paid-
 import { CashReceivedFormComponent } from './cash-received/cash-received-form/cash-received-form.component';
 import { CashReceivedListComponent } from './cash-received/cash-received-list/cash-received-list.component';
 import { CashReceivedDetailComponent } from './cash-received/cash-received-detail/cash-received-detail.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 const routes: Routes = [
   { path: '', redirectTo: 'purchase', pathMatch: 'full' },
@@ -127,7 +129,12 @@ const routes: Routes = [
   imports: [
     CommonModule,
     SharedModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     RouterModule.forChild(routes)
-  ]
+  ],providers: [
+    // Other providers...
+    DatePipe, // Add DatePipe to providers
+  ],
 })
 export class VoucherModule { }

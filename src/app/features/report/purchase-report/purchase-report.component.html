@@ -96,17 +96,17 @@
       </ng-container>
 
       <!-- Payment Type Column -->
-      <ng-container matColumnDef="paymentType">
+      <!-- <ng-container matColumnDef="paymentType">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Payment Type </th>
         <td mat-cell *matCellDef="let voucher"> {{ getPaymentTypeText(voucher.paymentType) }} </td>
-      </ng-container>
+      </ng-container> -->
 
       <!-- Items Column -->
       <ng-container matColumnDef="items">
         <th mat-header-cell *matHeaderCellDef> Items </th>
         <td mat-cell *matCellDef="let voucher">
           <span *ngFor="let item of voucher.voucherItems; let isLast = last">
-            {{ item.itemName }} ({{ item.netWeight }}kg){{ isLast ? '' : ', ' }}
+            {{ item.itemName }}
           </span>
         </td>
       </ng-container>
@@ -116,7 +116,29 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Weight (kg) </th>
         <td mat-cell *matCellDef="let voucher"> {{ getVoucherTotalWeight(voucher) }} </td>
       </ng-container>
-
+     <!-- Kat Column -->
+      <ng-container matColumnDef="kat">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Kat </th>
+        <td mat-cell *matCellDef="let voucher">
+           <span *ngFor="let item of voucher.voucherItems; let isLast = last">
+            {{ item.kat }}
+          </span>
+        </td>
+      </ng-container>
+      <!-- Net weight Column -->
+      <ng-container matColumnDef="netweight">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Net Weight</th>
+        <td mat-cell *matCellDef="let voucher">  <span *ngFor="let item of voucher.voucherItems; let isLast = last">
+            {{ item.netWeight }}
+          </span> </td>
+      </ng-container>
+      <!-- aRte Column -->
+      <ng-container matColumnDef="rate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Rate </th>
+        <td mat-cell *matCellDef="let voucher"> <span *ngFor="let item of voucher.voucherItems; let isLast = last">
+            {{ item.rate }}
+          </span> </td>
+      </ng-container>
       <!-- Total Amount Column -->
       <ng-container matColumnDef="amount">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Amount </th>

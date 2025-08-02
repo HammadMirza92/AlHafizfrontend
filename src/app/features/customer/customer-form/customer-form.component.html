@@ -1,27 +1,58 @@
 <div class="customer-form-container">
   <div class="header">
     <h1>{{ isEditMode ? 'Edit' : 'New' }} Customer</h1>
-    <button mat-raised-button color="primary" routerLink="/customers">
+    <button mat-raised-button color="primary" routerLink="/customers" class="list-button">
       <mat-icon>list</mat-icon>
       All Customers
     </button>
   </div>
 
   <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
-    <mat-card>
-      <mat-card-content>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Customer Name</mat-label>
-          <input matInput formControlName="name" placeholder="Enter customer name" required>
-          <mat-error *ngIf="customerForm.get('name')?.hasError('required')">
-            Customer name is required
-          </mat-error>
-        </mat-form-field>
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>Customer Information</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content class="form-content">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Customer Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter customer name" required>
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="customerForm.get('name')?.hasError('required')">
+              Customer name is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phoneNumber" placeholder="Enter phone number">
+            <mat-icon matSuffix>phone</mat-icon>
+            <mat-error *ngIf="customerForm.get('phoneNumber')?.hasError('pattern')">
+              Please enter a valid phone number
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Add customer description" rows="4"></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+          </mat-form-field>
+        </div>
       </mat-card-content>
 
-      <mat-card-actions align="end">
-        <button mat-button type="button" routerLink="/customers">Cancel</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="customerForm.invalid">
+      <mat-divider></mat-divider>
+
+      <mat-card-actions align="end" class="form-actions">
+        <button mat-button type="button" routerLink="/customers" class="cancel-button">
+          <mat-icon>close</mat-icon> Cancel
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="customerForm.invalid" class="save-button">
+          <mat-icon>{{ isEditMode ? 'update' : 'save' }}</mat-icon>
           {{ isEditMode ? 'Update' : 'Save' }}
         </button>
       </mat-card-actions>

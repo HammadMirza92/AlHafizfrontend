@@ -18,7 +18,7 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
   styleUrls: ['./purchase-report.component.scss']
 })
 export class PurchaseReportComponent implements OnInit {
-  displayedColumns: string[] = ['date', 'id', 'customer', 'paymentType', 'items', 'weight', 'amount', 'actions'];
+  displayedColumns: string[] = ['date', 'id', 'customer', 'items', 'weight','kat','netweight','rate', 'amount', 'actions'];
   dataSource = new MatTableDataSource<Voucher>([]);
   customers: Customer[] = [];
   filterForm: FormGroup;

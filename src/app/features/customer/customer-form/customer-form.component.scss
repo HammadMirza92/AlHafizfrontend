@@ -1,18 +1,91 @@
 .customer-form-container {
-  padding: 20px;
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 
     h1 {
       margin: 0;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .list-button {
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .form-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    mat-card-header {
+      padding: 16px 16px 0;
+
+      mat-card-title {
+        font-size: 18px;
+        font-weight: 500;
+      }
+    }
+
+    .form-content {
+      padding: 16px;
+
+      .form-row {
+        margin-bottom: 16px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    .form-actions {
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+
+      .cancel-button, .save-button {
+        display: flex;
+        align-items: center;
+
+        mat-icon {
+          margin-right: 8px;
+        }
+      }
+
+      .save-button {
+        min-width: 120px;
+      }
     }
   }
 
   .full-width {
     width: 100%;
+  }
+
+  mat-divider {
+    margin: 0;
+  }
+
+  @media (max-width: 599px) {
+    padding: 16px;
+
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      button {
+        align-self: flex-start;
+      }
+    }
   }
 }

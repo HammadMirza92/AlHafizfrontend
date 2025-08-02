@@ -15,9 +15,11 @@ import { AlertComponent } from '../../../shared/components/alert/alert.component
   styleUrls: ['./customer-list.component.scss']
 })
 export class CustomerListComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'name', 'actions'];
+  displayedColumns: string[] = ['id', 'name', 'phoneNumber', 'description', 'actions'];
   dataSource = new MatTableDataSource<Customer>([]);
   searchTerm = '';
+  isLoading = false;
+  allCustomers: Customer[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -38,24 +40,41 @@ export class CustomerListComponent implements OnInit {
   }
 
   loadCustomers(): void {
-    this.customerService.getCustomers().subscribe(customers => {
-      this.dataSource.data = customers;
+    this.isLoading = true;
+    this.customerService.getCustomers().subscribe({
+      next: (customers) => {
+        this.allCustomers = customers;
+        this.dataSource.data = customers;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.showError('Error loading customers: ' + this.getErrorMessage(error));
+        this.isLoading = false;
+      }
     });
   }
 
   applyFilter(): void {
-    if (this.searchTerm.trim()) {
-      this.customerService.searchCustomers(this.searchTerm).subscribe(customers => {
-        this.dataSource.data = customers;
-      });
-    } else {
-      this.loadCustomers();
+    // Front-end filtering
+    const filterValue = this.searchTerm.toLowerCase().trim();
+
+    if (!filterValue) {
+      this.dataSource.data = this.allCustomers;
+      return;
     }
+
+    this.dataSource.data = this.allCustomers.filter(customer => {
+      const nameMatch = customer.name?.toLowerCase().includes(filterValue) || false;
+      const phoneMatch = customer.phoneNumber?.toLowerCase().includes(filterValue) || false;
+      const descMatch = customer.description?.toLowerCase().includes(filterValue) || false;
+
+      return nameMatch || phoneMatch || descMatch;
+    });
   }
 
   clearSearch(): void {
     this.searchTerm = '';
-    this.loadCustomers();
+    this.dataSource.data = this.allCustomers;
   }
 
   deleteCustomer(customer: Customer): void {
@@ -63,34 +82,51 @@ export class CustomerListComponent implements OnInit {
       width: '400px',
       data: {
         title: 'Confirm Delete',
-        message: `Are you sure you want to delete customer ${customer.name}?`
+        message: `Are you sure you want to delete customer "${customer.name}"?`,
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: 'warn'
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.isLoading = true;
         this.customerService.deleteCustomer(customer.id).subscribe({
           next: () => {
-            this.snackBar.openFromComponent(AlertComponent, {
-              data: {
-                message: 'Customer deleted successfully!',
-                type: 'success'
-              },
-              duration: 3000
-            });
+            this.showSuccess(`Customer "${customer.name}" deleted successfully!`);
             this.loadCustomers();
           },
-          error: () => {
-            this.snackBar.openFromComponent(AlertComponent, {
-              data: {
-                message: 'Error deleting customer. It may be in use.',
-                type: 'error'
-              },
-              duration: 3000
-            });
+          error: (error) => {
+            this.showError('Error deleting customer: ' + this.getErrorMessage(error));
+            this.isLoading = false;
           }
         });
       }
     });
+  }
+
+  showSuccess(message: string): void {
+    this.snackBar.openFromComponent(AlertComponent, {
+      data: {
+        message,
+        type: 'success'
+      },
+      duration: 3000
+    });
+  }
+
+  showError(message: string): void {
+    this.snackBar.openFromComponent(AlertComponent, {
+      data: {
+        message,
+        type: 'error'
+      },
+      duration: 5000
+    });
+  }
+
+  getErrorMessage(error: any): string {
+    return error.error?.message || error.message || 'Unknown error occurred';
   }
 }

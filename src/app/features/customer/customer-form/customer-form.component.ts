@@ -14,6 +14,7 @@ export class CustomerFormComponent implements OnInit {
   customerForm: FormGroup;
   isEditMode = false;
   customerId: number | null = null;
+  isLoading = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -36,20 +37,27 @@ export class CustomerFormComponent implements OnInit {
 
   createForm(): FormGroup {
     return this.formBuilder.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
+      phoneNumber: ['', Validators.pattern('^[0-9+\\-\\s()]*$')],
+      description: ['']
     });
   }
 
   loadCustomer(id: number): void {
+    this.isLoading = true;
     this.customerService.getCustomer(id).subscribe({
       next: (customer) => {
         this.customerForm.patchValue({
-          name: customer.name
+          name: customer.name,
+          phoneNumber: customer.phoneNumber,
+          description: customer.description
         });
+        this.isLoading = false;
       },
       error: () => {
         this.showError('Customer not found');
         this.router.navigate(['/customers']);
+        this.isLoading = false;
       }
     });
   }
@@ -60,25 +68,34 @@ export class CustomerFormComponent implements OnInit {
     }
 
     const formValue = this.customerForm.value;
+    const customerData = {
+      name: formValue.name,
+      phoneNumber: formValue.phoneNumber || '',
+      description: formValue.description || ''
+    };
+
+    this.isLoading = true;
 
     if (this.isEditMode && this.customerId) {
-      this.customerService.updateCustomer(this.customerId, { name: formValue.name }).subscribe({
+      this.customerService.updateCustomer(this.customerId, customerData).subscribe({
         next: () => {
           this.showSuccess('Customer updated successfully');
           this.router.navigate(['/customers']);
         },
-        error: () => {
-          this.showError('Error updating customer');
+        error: (error) => {
+          this.showError('Error updating customer: ' + this.getErrorMessage(error));
+          this.isLoading = false;
         }
       });
     } else {
-      this.customerService.createCustomer({ name: formValue.name }).subscribe({
+      this.customerService.createCustomer(customerData).subscribe({
         next: () => {
           this.showSuccess('Customer created successfully');
           this.router.navigate(['/customers']);
         },
-        error: () => {
-          this.showError('Error creating customer');
+        error: (error) => {
+          this.showError('Error creating customer: ' + this.getErrorMessage(error));
+          this.isLoading = false;
         }
       });
     }
@@ -94,7 +111,11 @@ export class CustomerFormComponent implements OnInit {
   showError(message: string): void {
     this.snackBar.openFromComponent(AlertComponent, {
       data: { message, type: 'error' },
-      duration: 3000
+      duration: 5000
     });
+  }
+
+  getErrorMessage(error: any): string {
+    return error.error?.message || error.message || 'Unknown error occurred';
   }
 }
